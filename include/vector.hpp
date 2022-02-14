@@ -1,108 +1,11 @@
 #pragma once
 
-#include "iterator_traits.hpp"
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
+#include "iterator_traits.hpp"
 #include "nullptr.hpp"
-#include <iterator>
-
-namespace Vector {
-
-template <typename T>
-class iterator : public std::iterator<std::random_access_iterator_tag, T> {
-
-public:
-  typedef T value_type;
-  typedef T *pointer;
-  typedef T &reference;
-  typedef std::ptrdiff_t difference_type;
-  typedef std::random_access_iterator_tag iterator_category;
-
-private:
-  T *_ptr;
-
-public:
-  iterator() : _ptr(ft::u_nullptr) {}
-
-  iterator(T *ptr) : _ptr(ptr) {}
-
-  iterator(const iterator &i) : _ptr(i.ptr) {}
-
-  iterator &operator=(const iterator &i) {
-    if (this != &i)
-      _ptr = i.ptr;
-    return *this;
-  }
-
-  ~iterator() {}
-
-  bool operator==(const iterator &i) const { return _ptr == i._ptr; }
-
-  bool operator!=(const iterator &i) const { return _ptr != i._ptr; }
-
-  T &operator*() const { return *_ptr; }
-
-  T *operator->() const { return _ptr; }
-
-  iterator &operator++() {
-    ++_ptr;
-    return *this;
-  }
-
-  iterator operator++(int) {
-    iterator tmp(*this);
-    ++_ptr;
-    return tmp;
-  }
-
-  iterator &operator--() {
-    --_ptr;
-    return *this;
-  }
-
-  iterator operator--(int) {
-    iterator tmp(*this);
-    --_ptr;
-    return tmp;
-  }
-
-  iterator operator+(int n) const {
-    iterator tmp(*this);
-    tmp._ptr += n;
-    return tmp;
-  }
-
-  iterator operator-(int n) const {
-    iterator tmp(*this);
-    tmp._ptr -= n;
-    return tmp;
-  }
-
-  bool operator<(const iterator &i) const { return _ptr < i._ptr; }
-
-  bool operator>(const iterator &i) const { return _ptr > i._ptr; }
-
-  bool operator<=(const iterator &i) const { return _ptr <= i._ptr; }
-
-  bool operator>=(const iterator &i) const { return _ptr >= i._ptr; }
-
-  int operator-(const iterator &i) const { return _ptr - i._ptr; }
-
-  iterator &operator+=(int n) {
-    _ptr += n;
-    return *this;
-  }
-
-  iterator &operator-=(int n) {
-    _ptr -= n;
-    return *this;
-  }
-
-  T &operator[](int n) const { return _ptr[n]; }
-};
-
-} // namespace Vector
+#include "random_access_iterator.hpp"
 
 namespace ft {
 
@@ -114,19 +17,12 @@ public:
   typedef typename allocator_type::const_reference const_reference;
   typedef typename allocator_type::pointer pointer;
   typedef typename allocator_type::const_pointer const_pointer;
-  typedef Vector::iterator<value_type> iterator;
-  typedef Vector::iterator<const value_type> const_iterator;
+  typedef ft::random_access_iterator<value_type> iterator;
+  typedef ft::random_access_iterator<const value_type> const_iterator;
   typedef
       typename ft::iterator_traits<iterator>::difference_type difference_type;
   typedef std::size_t size_type;
 
-private:
-  value_type *_data;
-  size_type _size;
-  size_type _capacity;
-  allocator_type _alloc;
-
-public:
   // Member functions
 
   explicit vector(const allocator_type &alloc = allocator_type())
@@ -223,6 +119,12 @@ public:
   iterator begin() { return iterator(_data); }
 
   iterator end() { return iterator(_data + _size); }
+
+private:
+  value_type *_data;
+  size_type _size;
+  size_type _capacity;
+  allocator_type _alloc;
 };
 
 } // namespace ft
