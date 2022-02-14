@@ -3,7 +3,7 @@
 #include "Vector.hpp"
 
 TEST(TestVector, TestVector) {
-    ft::Vector<int> v1;
-    EXPECT_EQ(v1.size(), 0);
+  ft::vector<int> v1;
+  EXPECT_EQ(v1.size(), 0);
+  EXPECT_EQ(1, 0);
 }
-
