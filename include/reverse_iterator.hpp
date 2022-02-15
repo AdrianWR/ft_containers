@@ -8,12 +8,12 @@ namespace ft {
 template <class Iterator> class reverse_iterator {
 public:
   typedef Iterator iterator_type;
-  typedef typename iterator_traits<iterator_type>::value_type value_type;
-  typedef typename iterator_traits<iterator_type>::pointer pointer;
-  typedef typename iterator_traits<iterator_type>::reference reference;
-  typedef
-      typename iterator_traits<iterator_type>::difference_type difference_type;
-  typedef typename iterator_traits<iterator_type>::iterator_category
+  typedef typename ft::iterator_traits<iterator_type>::value_type value_type;
+  typedef typename ft::iterator_traits<iterator_type>::pointer pointer;
+  typedef typename ft::iterator_traits<iterator_type>::reference reference;
+  typedef typename ft::iterator_traits<iterator_type>::difference_type
+      difference_type;
+  typedef typename ft::iterator_traits<iterator_type>::iterator_category
       iterator_category;
 
   reverse_iterator() : _it() {}
@@ -23,7 +23,7 @@ public:
   template <class Iter>
   reverse_iterator(const reverse_iterator<Iter> &rev_it) : _it(rev_it.base()) {}
 
-  virtual ~reverse_iterator() {}
+  ~reverse_iterator() {}
 
   iterator_type base() const { return _it; }
 
@@ -124,5 +124,7 @@ operator-(typename reverse_iterator<Iterator>::difference_type n,
           const reverse_iterator<Iterator> &it) {
   return it - n;
 }
+
+} // namespace ft
 
 #endif

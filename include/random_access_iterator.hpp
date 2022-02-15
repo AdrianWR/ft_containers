@@ -1,38 +1,23 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   random_access_iterator.hpp                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aroque <aroque@student.42sp.org.br>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/02/14 14:16:45 by aroque            #+#    #+#             */
-/*   Updated: 2022/02/14 14:16:46 by aroque           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef RANDOM_ACCESS_ITERATOR_HPP
 #define RANDOM_ACCESS_ITERATOR_HPP
 
 #include "iterator.hpp"
 
-#include "nullptr.hpp"
-#include <iterator>
-
 namespace ft {
 
 template <typename T>
 class random_access_iterator
-    : public ft::iterator<std::random_access_iterator_tag, T> {
+    : public ft::iterator<ft::random_access_iterator_tag, T> {
 
 public:
   typedef T value_type;
   typedef T *pointer;
   typedef T &reference;
-  typedef std::ptrdiff_t difference_type;
-  typedef std::random_access_iterator_tag iterator_category;
+  typedef ft::ptrdiff_t difference_type;
+  typedef ft::random_access_iterator_tag iterator_category;
 
 public:
-  random_access_iterator() : _ptr(ft::u_nullptr) {}
+  random_access_iterator() : _ptr(NULL) {}
 
   random_access_iterator(pointer ptr) : _ptr(ptr) {}
 
