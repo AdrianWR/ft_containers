@@ -10,6 +10,7 @@ FetchContent_MakeAvailable(googletest)
 add_executable(
 	Test
 	TestVector.cpp
+	TestAlgorithm.cpp
 	)
 target_link_libraries(Test gtest_main)
 
