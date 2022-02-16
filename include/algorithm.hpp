@@ -53,6 +53,7 @@ bool lexicographical_compare(InputIterator1 first1, InputIterator1 last1,
     ++first2;
   }
   return first2 != last2;
+}
 
 } // namespace ft
 
