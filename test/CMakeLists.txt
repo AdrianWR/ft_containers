@@ -7,13 +7,12 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-add_executable(
-	Test
-	TestVector.cpp
-	TestAlgorithm.cpp
-	)
-target_link_libraries(Test gtest_main)
+enable_testing()
 
-include(GoogleTest)
-gtest_discover_tests(Test)
+add_executable(TestUtils TestAlgorithm.cpp)
+target_link_libraries(TestUtils gtest_main)
+add_test(NAME TestUtils COMMAND TestUtils)
 
+add_executable(TestVector TestVector.cpp)
+target_link_libraries(TestVector gtest_main)
+add_test(NAME TestVector COMMAND TestVector)
