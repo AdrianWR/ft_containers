@@ -8,8 +8,12 @@
 #include <vector>
 
 bool pred_int(int a, int b) { return a == b; }
-bool pred_string(std::string a, std::string b) { return a == b; }
+bool pred_str(std::string a, std::string b) { return a == b; }
 bool pred_map(std::pair<int, int> a, std::pair<int, int> b) { return a == b; }
+
+bool comp_int(int a, int b) { return a < b; }
+bool comp_str(std::string a, std::string b) { return a < b; }
+bool comp_map(std::pair<int, int> a, std::pair<int, int> b) { return a < b; }
 
 // Tests ft::equal
 
@@ -67,8 +71,8 @@ TEST(TestEqual, TestEqualPredicate) {
 
   EXPECT_TRUE(ft::equal(v1.begin(), v1.end(), v2.begin(), pred_int));
   EXPECT_TRUE(ft::equal(v1.rbegin(), v1.rend(), v2.rbegin(), pred_int));
-  EXPECT_TRUE(ft::equal(v3.begin(), v3.end(), v4.begin(), pred_string));
-  EXPECT_TRUE(ft::equal(v3.rbegin(), v3.rend(), v4.rbegin(), pred_string));
+  EXPECT_TRUE(ft::equal(v3.begin(), v3.end(), v4.begin(), pred_str));
+  EXPECT_TRUE(ft::equal(v3.rbegin(), v3.rend(), v4.rbegin(), pred_str));
   EXPECT_TRUE(ft::equal(m1.begin(), m1.end(), m2.begin(), pred_map));
   EXPECT_TRUE(ft::equal(m1.rbegin(), m1.rend(), m2.rbegin(), pred_map));
 }
@@ -95,4 +99,60 @@ TEST(TestLexicographicalCompare, TestLexicographicalCompareEqual) {
       ft::lexicographical_compare(v1.begin(), v1.end(), v2.begin(), v2.end()));
   EXPECT_FALSE(ft::lexicographical_compare(v1.rbegin(), v1.rend(), v2.rbegin(),
                                            v2.rend()));
+  EXPECT_FALSE(
+      ft::lexicographical_compare(v3.begin(), v3.end(), v4.begin(), v4.end()));
+  EXPECT_FALSE(ft::lexicographical_compare(v3.rbegin(), v3.rend(), v4.rbegin(),
+                                           v4.rend()));
+  EXPECT_FALSE(
+      ft::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end()));
+  EXPECT_FALSE(ft::lexicographical_compare(m1.rbegin(), m1.rend(), m2.rbegin(),
+                                           m2.rend()));
+}
+
+TEST(TestLexicographicalCompare, TestLexicographicalCompareLess) {
+  std::vector<int> v1 = {1, 2, 3, 4, 5};
+  std::vector<int> v2 = {1, 2, 3, 4, 6};
+  std::map<int, int> m1 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
+  std::map<int, int> m2 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 6}};
+  std::deque<int> d1 = {1, 2, 3, 4, 5};
+  std::deque<int> d2 = {1, 2, 3, 4, 6};
+
+  EXPECT_TRUE(
+      ft::lexicographical_compare(v1.begin(), v1.end(), v2.begin(), v2.end()));
+  EXPECT_TRUE(
+      ft::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end()));
+  EXPECT_TRUE(
+      ft::lexicographical_compare(d1.begin(), d1.end(), d2.begin(), d2.end()));
+}
+
+TEST(TestLexicographicalCompare, TestLexicographicalCompareGreater) {
+  std::vector<int> v1 = {1, 2, 3, 4, 5};
+  std::vector<int> v2 = {1, 2, 3, 4, 4};
+  std::map<int, int> m1 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
+  std::map<int, int> m2 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 4}};
+  std::deque<int> d1 = {1, 2, 3, 4, 5};
+  std::deque<int> d2 = {1, 2, 3, 4, 4};
+
+  EXPECT_FALSE(
+      ft::lexicographical_compare(v1.begin(), v1.end(), v2.begin(), v2.end()));
+  EXPECT_FALSE(
+      ft::lexicographical_compare(m1.begin(), m1.end(), m2.begin(), m2.end()));
+  EXPECT_FALSE(
+      ft::lexicographical_compare(d1.begin(), d1.end(), d2.begin(), d2.end()));
+}
+
+TEST(TestLexicographicalCompare, TestLexicographicalCompareCompFunc) {
+  std::vector<int> v1 = {1, 2, 3, 4, 5};
+  std::vector<int> v2 = {1, 2, 3, 4, 6};
+  std::map<int, int> m1 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
+  std::map<int, int> m2 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 6}};
+  std::vector<std::string> v3 = {"1", "2", "3", "4", "5"};
+  std::vector<std::string> v4 = {"1", "2", "3", "4", "6"};
+
+  EXPECT_TRUE(ft::lexicographical_compare(v1.begin(), v1.end(), v2.begin(),
+                                          v2.end(), comp_int));
+  EXPECT_TRUE(ft::lexicographical_compare(v3.begin(), v3.end(), v4.begin(),
+                                          v4.end(), comp_str));
+  EXPECT_TRUE(ft::lexicographical_compare(m1.begin(), m1.end(), m2.begin(),
+                                          m2.end(), comp_map));
 }
