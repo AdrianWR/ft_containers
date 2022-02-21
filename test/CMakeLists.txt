@@ -9,7 +9,11 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(TestUtils TestAlgorithm.cpp)
+add_executable(TestUtils
+	TestAlgorithm.cpp
+	TestUtility.cpp
+	TestTypeTraits.cpp
+)
 target_link_libraries(TestUtils gtest_main)
 add_test(NAME TestUtils COMMAND TestUtils)
 

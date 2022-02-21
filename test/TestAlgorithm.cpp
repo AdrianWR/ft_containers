@@ -25,6 +25,7 @@ TEST(TestEqual, TestEqualTrue) {
   std::map<int, int> m1 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
   std::map<int, int> m2 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
 
+  // ASSERT_TRUE(ft::equal(v1.begin(), v1.end(), v2.begin()));
   EXPECT_TRUE(ft::equal(v1.begin(), v1.end(), v2.begin()));
   EXPECT_TRUE(ft::equal(v1.rbegin(), v1.rend(), v2.rbegin()));
   EXPECT_TRUE(ft::equal(v3.begin(), v3.end(), v4.begin()));
