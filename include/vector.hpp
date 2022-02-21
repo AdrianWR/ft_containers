@@ -33,7 +33,7 @@ public:
   explicit vector(size_type n, const value_type &val = value_type(),
                   const allocator_type &alloc = allocator_type())
       : _size(n), _capacity(n), _alloc(alloc) {
-    _data = _alloc.allocate(n * sizeof(value_type));
+    _data = _alloc.allocate(_size * sizeof(value_type));
     for (size_type i = 0; i < _size; i++) {
       _alloc.construct(_data + i, val);
     }
@@ -43,29 +43,27 @@ public:
   vector(InputIterator first, InputIterator last,
          const allocator_type &alloc = allocator_type())
       : _alloc(alloc) {
-    _size = 0;
-    _capacity = 0;
-    _data = NULL;
-    for (; first != last; ++first) {
-      push_back(*first);
+    _size = ft::distance(first, last);
+    _capacity = _size;
+    _data = _alloc.allocate(_size * sizeof(value_type));
+    for (size_type i = 0; i < _size; i++) {
+      _alloc.construct(_data + i, *(first + i));
     }
   }
 
-  vector(const vector &v) {
-    _data = Alloc::allocate(_size);
-    for (unsigned int i = 0; i < _size; i++) {
-      _data[i] = v[i];
+  vector(const vector &x)
+      : _size(x._size), _capacity(x._capacity), _alloc(Alloc(x._alloc)) {
+    _data = _alloc.allocate(_size * sizeof(value_type));
+    for (size_type i = 0; i < _size; i++) {
+      _alloc.construct(_data + i, x._data[i]);
     }
-  };
+  }
 
   ~vector() {
-    if (_data != NULL) {
-      for (unsigned int i = 0; i < _size; i++) {
-        _alloc.destroy(_data + i);
-      }
-      _alloc.deallocate(_data, _size);
+    for (size_type i = 0; i < _size; i++) {
+      _alloc.destroy(_data + i);
     }
-  };
+  }
 
   vector &operator=(const vector &v) {
     if (this != &v) {
@@ -73,7 +71,7 @@ public:
         for (size_type i = 0; i < _size; i++) {
           _alloc.destroy(_data + i);
         }
-        _alloc.deallocate(_data, _size);
+        _alloc.deallocate(_data, _size * sizeof(value_type));
       }
       _size = v._size;
       _capacity = v._capacity;
@@ -116,7 +114,7 @@ public:
 
   void resize(size_type n, value_type val = value_type()) {
     if (n > _capacity) {
-      reserve(n << 1);
+      reserve(n * 2);
     }
     for (size_type i = _size; i < n; i++) {
       _alloc.construct(_data + i, val);

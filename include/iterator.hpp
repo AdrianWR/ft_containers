@@ -175,6 +175,32 @@ operator-(typename reverse_iterator<Iterator>::difference_type n,
   return it - n;
 }
 
+template <class InputIterator>
+typename ft::iterator_traits<InputIterator>::difference_type
+__do_distance(InputIterator first, InputIterator last, ft::input_iterator_tag) {
+  typename ft::iterator_traits<InputIterator>::difference_type result = 0;
+  while (first != last) {
+    ++first;
+    ++result;
+  }
+  return result;
+}
+
+template <class InputIterator>
+typename ft::iterator_traits<InputIterator>::difference_type
+__do_distance(InputIterator first, InputIterator last,
+              ft::random_access_iterator_tag) {
+  return last - first;
+}
+
+template <class InputIterator>
+typename ft::iterator_traits<InputIterator>::difference_type
+distance(InputIterator first, InputIterator last) {
+  return __do_distance(
+      first, last,
+      typename ft::iterator_traits<InputIterator>::iterator_category());
+}
+
 } // namespace ft
 
 #endif

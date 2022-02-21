@@ -21,7 +21,7 @@ public:
 
   random_access_iterator(pointer ptr) : _ptr(ptr) {}
 
-  random_access_iterator(const random_access_iterator &i) : _ptr(i.ptr) {}
+  random_access_iterator(const random_access_iterator &i) : _ptr(i._ptr) {}
 
   random_access_iterator &operator=(const random_access_iterator &i) {
     if (this != &i)
@@ -108,7 +108,7 @@ public:
   reference operator[](int n) const { return _ptr[n]; }
 
 private:
-  value_type *_ptr;
+  pointer _ptr;
 };
 
 } // namespace ft
