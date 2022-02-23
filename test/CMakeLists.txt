@@ -10,6 +10,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(TestUtils
+	TestIterator.cpp
 	TestAlgorithm.cpp
 	TestUtility.cpp
 	TestTypeTraits.cpp
