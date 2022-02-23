@@ -3,9 +3,12 @@
 
 #include "iterator.hpp"
 #include "random_access_iterator.hpp"
+#include "type_traits.hpp"
 #include <algorithm>
 #include <memory>
 #include <stdexcept>
+
+#include <iostream>
 
 namespace ft {
 
@@ -41,7 +44,9 @@ public:
 
   template <class InputIterator>
   vector(InputIterator first, InputIterator last,
-         const allocator_type &alloc = allocator_type())
+         const allocator_type &alloc = allocator_type(),
+         typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type
+             * = 0)
       : _alloc(alloc) {
     _size = ft::distance(first, last);
     _capacity = _size;
@@ -60,29 +65,25 @@ public:
   }
 
   ~vector() {
-    for (size_type i = 0; i < _size; i++) {
-      _alloc.destroy(_data + i);
+    if (_data != NULL) {
+      for (size_type i = 0; i < _size; i++) {
+        _alloc.destroy(_data + i);
+      }
+      _alloc.deallocate(_data, _size * sizeof(value_type));
     }
   }
 
-  vector &operator=(const vector &v) {
-    if (this != &v) {
-      if (_data != NULL) {
-        for (size_type i = 0; i < _size; i++) {
-          _alloc.destroy(_data + i);
-        }
-        _alloc.deallocate(_data, _size * sizeof(value_type));
-      }
-      _size = v._size;
-      _capacity = v._capacity;
-      _alloc = v._alloc;
-      _data = _alloc.allocate(_size);
+  vector &operator=(const vector &x) {
+    if (this != &x) {
+      _size = x._size;
+      _capacity = x._capacity;
+      _data = _alloc.allocate(_size * sizeof(value_type));
       for (size_type i = 0; i < _size; i++) {
-        _data[i] = v[i];
+        _alloc.construct(_data + i, x._data[i]);
       }
     }
     return *this;
-  };
+  }
 
   // Iterators
 
@@ -127,6 +128,9 @@ public:
   bool empty() const { return _size == 0; }
 
   void reserve(size_type n) {
+    if (n > max_size()) {
+      throw std::length_error("vector::reserve");
+    }
     if (n > _capacity) {
       value_type *tmp = _alloc.allocate(n * sizeof(value_type));
       for (size_type i = 0; i < _size; i++) {
