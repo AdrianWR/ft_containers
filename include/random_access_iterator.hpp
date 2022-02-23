@@ -25,7 +25,7 @@ public:
 
   random_access_iterator &operator=(const random_access_iterator &i) {
     if (this != &i)
-      _ptr = i.ptr;
+      _ptr = i._ptr;
     return *this;
   }
 
