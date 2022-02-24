@@ -5,7 +5,9 @@
 #include "random_access_iterator.hpp"
 #include "type_traits.hpp"
 #include <algorithm>
+#include <list>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 
 #include <iostream>
@@ -31,7 +33,9 @@ public:
   // Member functions
 
   explicit vector(const allocator_type &alloc = allocator_type())
-      : _data(NULL), _size(0), _capacity(0), _alloc(alloc){};
+      : _data(NULL), _size(0), _capacity(_init_capacity), _alloc(alloc) {
+    _data = _alloc.allocate(_capacity);
+  };
 
   explicit vector(size_type n, const value_type &val = value_type(),
                   const allocator_type &alloc = allocator_type())
@@ -49,8 +53,8 @@ public:
              * = 0)
       : _alloc(alloc) {
     _size = ft::distance(first, last);
-    _capacity = _size;
-    _data = _alloc.allocate(_size * sizeof(value_type));
+    _capacity = _size < _init_capacity ? _init_capacity : _size;
+    _data = _alloc.allocate(_capacity * sizeof(value_type));
     for (size_type i = 0; i < _size; i++) {
       _alloc.construct(_data + i, *(first + i));
     }
@@ -58,7 +62,7 @@ public:
 
   vector(const vector &x)
       : _size(x._size), _capacity(x._capacity), _alloc(Alloc(x._alloc)) {
-    _data = _alloc.allocate(_size * sizeof(value_type));
+    _data = _alloc.allocate(_capacity * sizeof(value_type));
     for (size_type i = 0; i < _size; i++) {
       _alloc.construct(_data + i, x._data[i]);
     }
@@ -69,15 +73,23 @@ public:
       for (size_type i = 0; i < _size; i++) {
         _alloc.destroy(_data + i);
       }
-      _alloc.deallocate(_data, _size * sizeof(value_type));
+      _alloc.deallocate(_data, _capacity * sizeof(value_type));
     }
   }
 
   vector &operator=(const vector &x) {
     if (this != &x) {
-      _size = x._size;
-      _capacity = x._capacity;
-      _data = _alloc.allocate(_size * sizeof(value_type));
+      if (_size != x._size) {
+        if (_data != NULL) {
+          for (size_type i = 0; i < _size; i++) {
+            _alloc.destroy(_data + i);
+          }
+          _alloc.deallocate(_data, _capacity * sizeof(value_type));
+        }
+        _size = x._size;
+        _capacity = x._capacity;
+        _data = _alloc.allocate(_capacity * sizeof(value_type));
+      }
       for (size_type i = 0; i < _size; i++) {
         _alloc.construct(_data + i, x._data[i]);
       }
@@ -114,11 +126,15 @@ public:
   size_type max_size() const { return _alloc.max_size(); }
 
   void resize(size_type n, value_type val = value_type()) {
-    if (n > _capacity) {
-      reserve(n * 2);
-    }
-    for (size_type i = _size; i < n; i++) {
-      _alloc.construct(_data + i, val);
+    if (n > _size) {
+      reserve(n);
+      for (size_type i = _size; i < n; i++) {
+        _alloc.construct(_data + i, val);
+      }
+    } else if (n < _size) {
+      for (size_type i = n; i < _size; i++) {
+        _alloc.destroy(_data + i);
+      }
     }
     _size = n;
   };
@@ -129,18 +145,21 @@ public:
 
   void reserve(size_type n) {
     if (n > max_size()) {
-      throw std::length_error("vector::reserve");
+      throw std::length_error("ft::vector::reserve");
     }
     if (n > _capacity) {
-      value_type *tmp = _alloc.allocate(n * sizeof(value_type));
+      _capacity = n;
+      pointer tmp = _alloc.allocate(_capacity * sizeof(value_type));
       for (size_type i = 0; i < _size; i++) {
         _alloc.construct(tmp + i, _data[i]);
       }
-      _alloc.deallocate(_data, _capacity);
+      for (size_type i = 0; i < _size; i++) {
+        _alloc.destroy(_data + i);
+      }
+      _alloc.deallocate(_data, _size * sizeof(value_type));
       _data = tmp;
-      _capacity = n;
     }
-  };
+  }
 
   // Element access
 
@@ -148,27 +167,32 @@ public:
 
   const_reference operator[](size_type n) const { return _data[n]; }
 
-  reference at(size_type n) {
-    if (n >= _size) {
-      throw std::out_of_range("Index out of range");
+  void _M_range_check(size_type __n) const {
+    if (__n >= size()) {
+      std::stringstream ss;
+      ss << "vector::_M_range_check: __n (which is " << __n
+         << ") >= this->size() (which is " << size() << ")";
+      throw std::out_of_range(ss.str());
     }
-    return _data[n];
+  }
+
+  reference at(size_type n) {
+    _M_range_check(n);
+    return (*this)[n];
   }
 
   const_reference at(size_type n) const {
-    if (n >= _size) {
-      throw std::out_of_range("Index out of range");
-    }
-    return _data[n];
+    _M_range_check(n);
+    return (*this)[n];
   }
 
-  reference front() { return _data[0]; }
+  reference front() { return *begin(); }
 
-  const_reference front() const { return _data[0]; }
+  const_reference front() const { return *begin(); }
 
-  reference back() { return _data[_size - 1]; }
+  reference back() { return *(end() - 1); }
 
-  const_reference back() const { return _data[_size - 1]; }
+  const_reference back() const { return *(end() - 1); }
 
   // Modifiers
 
@@ -201,7 +225,7 @@ public:
 
   void push_back(const value_type &val) {
     if (_size == _capacity) {
-      reserve(_capacity << 1);
+      reserve(_capacity * _growth_factor);
     }
     _alloc.construct(_data + _size, val);
     _size++;
@@ -216,7 +240,7 @@ public:
 
   iterator insert(iterator position, const value_type &val) {
     if (_size == _capacity) {
-      reserve(_capacity << 1);
+      reserve(_capacity * _growth_factor);
     }
     for (size_type i = _size; i > position - _data; i--) {
       _alloc.construct(_data + i, _data[i - 1]);
@@ -228,7 +252,7 @@ public:
 
   void insert(iterator position, size_type n, const value_type &val) {
     if (_size + n > _capacity) {
-      reserve(_capacity << 1);
+      reserve(_capacity * _growth_factor);
     }
     for (size_type i = _size; i > position - _data; i--) {
       _alloc.construct(_data + i, _data[i - 1]);
@@ -243,7 +267,7 @@ public:
   void insert(iterator position, InputIterator first, InputIterator last) {
     size_type n = last - first;
     if (_size + n > _capacity) {
-      reserve(_capacity << 1);
+      reserve(_capacity * _growth_factor);
     }
     for (size_type i = _size; i > position - _data; i--) {
       _alloc.construct(_data + i, _data[i - 1]);
@@ -296,6 +320,8 @@ private:
   size_type _size;
   size_type _capacity;
   allocator_type _alloc;
+  static const size_type _init_capacity = 48;
+  static const size_type _growth_factor = 2;
 };
 
 template <class T, class Alloc>
