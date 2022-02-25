@@ -436,6 +436,36 @@ TEST(TestVector, TestVectorAssign) {
   ASSERT_EQ(v3[2], 4);
 }
 
+TEST(TestVector, TestVectorPushBack) {
+  ft::vector<int> v1;
+  v1.push_back(42);
+  ASSERT_EQ(v1.size(), 1);
+  ASSERT_EQ(v1[0], 42);
+
+  ft::vector<int> v2(5);
+  v2.push_back(42);
+  ASSERT_EQ(v2.size(), 6);
+  ASSERT_EQ(v2[5], 42);
+
+  ft::vector<int> v3(12, 42);
+  v3.push_back(43);
+  ASSERT_EQ(v3.size(), 13);
+  ASSERT_EQ(v3[12], 43);
+}
+
+TEST(TestVector, TestVectorPopBack) {
+  ft::vector<int> v1;
+  ASSERT_THROW(v1.pop_back(), std::out_of_range);
+
+  ft::vector<int> v2(5);
+  v2.pop_back();
+  ASSERT_EQ(v2.size(), 4);
+
+  ft::vector<int> v3(12, 42);
+  v3.pop_back();
+  ASSERT_EQ(v3.size(), 11);
+}
+
 TEST(TestVector, TestVectorInsert) {
   ft::vector<int> v1(3, 100);
   ft::vector<int>::iterator it = v1.begin();

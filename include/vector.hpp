@@ -235,7 +235,7 @@ public:
 
   void push_back(const value_type &val) {
     if (_size == _capacity) {
-      reserve(_capacity * _growth_factor);
+      reserve(_capacity ? _capacity * _growth_factor : 1);
     }
     _alloc.construct(_data + _size, val);
     _size++;
@@ -245,6 +245,8 @@ public:
     if (_size > 0) {
       _alloc.destroy(_data + _size - 1);
       _size--;
+    } else {
+      throw std::out_of_range("ft::vector::pop_back");
     }
   };
 
