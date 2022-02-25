@@ -99,25 +99,25 @@ public:
 
   // Iterators
 
-  iterator begin() { return iterator(_data); };
+  iterator begin() { return iterator(_data); }
 
-  const_iterator begin() const { return const_iterator(_data); };
+  const_iterator begin() const { return const_iterator(_data); }
 
-  iterator end() { return iterator(_data + _size); };
+  iterator end() { return iterator(_data + _size); }
 
-  const_iterator end() const { return const_iterator(_data + _size); };
+  const_iterator end() const { return const_iterator(_data + _size); }
 
-  reverse_iterator rbegin() { return reverse_iterator(end()); };
+  reverse_iterator rbegin() { return reverse_iterator(end()); }
 
   const_reverse_iterator rbegin() const {
     return const_reverse_iterator(end());
-  };
+  }
 
-  reverse_iterator rend() { return reverse_iterator(begin()); };
+  reverse_iterator rend() { return reverse_iterator(begin()); }
 
   const_reverse_iterator rend() const {
     return const_reverse_iterator(begin());
-  };
+  }
 
   // Capacity
 
@@ -137,7 +137,7 @@ public:
       }
     }
     _size = n;
-  };
+  }
 
   size_type capacity() const { return _capacity; }
 
@@ -197,30 +197,40 @@ public:
   // Modifiers
 
   template <class InputIterator>
-  void assign(InputIterator first, InputIterator last) {
-    for (size_type i = 0; i < _size; i++) {
+  void assign(
+      InputIterator first, InputIterator last,
+      typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type * =
+          0) {
+    size_type n = ft::distance(first, last);
+    if (n > max_size()) {
+      throw std::length_error("ft::vector::assign");
+    }
+    if (n > capacity()) {
+      reserve(n);
+    }
+    for (size_type i = 0; i < n; i++) {
+      _alloc.construct(_data + i, *(first + i));
+    }
+    for (size_type i = n; i < _size; i++) {
       _alloc.destroy(_data + i);
     }
-    _alloc.deallocate(_data, _capacity);
-    _size = 0;
-    _capacity = 0;
-    _data = NULL;
-    for (; first != last; ++first) {
-      push_back(*first);
-    }
+    _size = n;
   }
 
   void assign(size_type n, const value_type &val) {
-    for (size_type i = 0; i < _size; i++) {
-      _alloc.destroy(_data + i);
+    if (n > max_size()) {
+      throw std::length_error("ft::vector::assign");
     }
-    _alloc.deallocate(_data, _capacity);
-    _size = n;
-    _capacity = n;
-    _data = _alloc.allocate(n * sizeof(value_type));
-    for (size_type i = 0; i < _size; i++) {
+    if (n > capacity()) {
+      reserve(n);
+    }
+    for (size_type i = 0; i < n; i++) {
       _alloc.construct(_data + i, val);
     }
+    for (size_type i = n; i < _size; i++) {
+      _alloc.destroy(_data + i);
+    }
+    _size = n;
   }
 
   void push_back(const value_type &val) {
@@ -239,41 +249,47 @@ public:
   };
 
   iterator insert(iterator position, const value_type &val) {
+    size_type _offset = position - begin();
     if (_size == _capacity) {
       reserve(_capacity * _growth_factor);
     }
-    for (size_type i = _size; i > position - _data; i--) {
+    for (size_type i = _size; i > _offset; i--) {
       _alloc.construct(_data + i, _data[i - 1]);
     }
-    _alloc.construct(_data + position - _data, val);
+    _alloc.construct(_data + _offset, val);
     _size++;
-    return position;
-  };
+    return iterator(_data + _offset);
+  }
 
   void insert(iterator position, size_type n, const value_type &val) {
+    size_type _offset = position - begin();
     if (_size + n > _capacity) {
       reserve(_capacity * _growth_factor);
     }
-    for (size_type i = _size; i > position - _data; i--) {
-      _alloc.construct(_data + i, _data[i - 1]);
+    for (size_type i = _size; i > _offset; i--) {
+      _alloc.construct(_data + i + n - 1, _data[i - 1]);
     }
     for (size_type i = 0; i < n; i++) {
-      _alloc.construct(_data + position - _data + i, val);
+      _alloc.construct(_data + _offset + i, val);
     }
     _size += n;
-  };
+  }
 
   template <class InputIterator>
-  void insert(iterator position, InputIterator first, InputIterator last) {
-    size_type n = last - first;
+  void insert(
+      iterator position, InputIterator first, InputIterator last,
+      typename ft::enable_if<!ft::is_integral<InputIterator>::value>::type * =
+          0) {
+    size_type _offset = position - begin();
+    size_type n = ft::distance(first, last);
     if (_size + n > _capacity) {
       reserve(_capacity * _growth_factor);
     }
-    for (size_type i = _size; i > position - _data; i--) {
-      _alloc.construct(_data + i, _data[i - 1]);
+    for (size_type i = _size; i > _offset; i--) {
+      _alloc.construct(_data + i + n - 1, _data[i - 1]);
     }
     for (size_type i = 0; i < n; i++) {
-      _alloc.construct(_data + position - _data + i, *(first + i));
+      _alloc.construct(_data + _offset + i, *(first + i));
     }
     _size += n;
   };
@@ -320,7 +336,7 @@ private:
   size_type _size;
   size_type _capacity;
   allocator_type _alloc;
-  static const size_type _init_capacity = 48;
+  static const size_type _init_capacity = 0;
   static const size_type _growth_factor = 2;
 };
 

@@ -5,7 +5,7 @@
 
 #include "vector.hpp"
 
-ft::vector<int>::size_type init_capacity = 48;
+ft::vector<int>::size_type init_capacity = 0;
 
 TEST(TestVector, TestVectorDefaultConstructor) {
   ft::vector<int> v1;
@@ -409,4 +409,85 @@ TEST(TestVector, TestVectorBack) {
 
   ft::vector<int> const v2(arr1, arr1 + 5);
   ASSERT_EQ(v2.back(), 5);
+}
+
+TEST(TestVector, TestVectorAssign) {
+  ft::vector<int> v1;
+  ft::vector<int> v2;
+  ft::vector<int> v3;
+
+  v1.assign(7, 100);
+  ASSERT_EQ(v1.size(), 7);
+  ASSERT_EQ(v1[0], 100);
+  ASSERT_EQ(v1[1], 100);
+  ASSERT_EQ(v1[2], 100);
+
+  ft::vector<int>::iterator it = v1.begin() + 1;
+  v2.assign(it, v1.end() - 1);
+  ASSERT_EQ(v2.size(), 5);
+  ASSERT_EQ(v2[0], 100);
+  ASSERT_EQ(v2[4], 100);
+
+  int myints[] = {1776, 7, 4};
+  v3.assign(myints, myints + 3);
+  ASSERT_EQ(v3.size(), 3);
+  ASSERT_EQ(v3[0], 1776);
+  ASSERT_EQ(v3[1], 7);
+  ASSERT_EQ(v3[2], 4);
+}
+
+TEST(TestVector, TestVectorInsert) {
+  ft::vector<int> v1(3, 100);
+  ft::vector<int>::iterator it = v1.begin();
+
+  it = v1.insert(it, 200);
+  ASSERT_EQ(v1.size(), 4);
+  ASSERT_EQ(v1[0], 200);
+  ASSERT_EQ(v1[1], 100);
+  ASSERT_EQ(v1[2], 100);
+  ASSERT_EQ(v1[3], 100);
+
+  v1.insert(it, 2, 300);
+  ASSERT_EQ(v1.size(), 6);
+  ASSERT_EQ(v1[0], 300);
+  ASSERT_EQ(v1[1], 300);
+  ASSERT_EQ(v1[2], 200);
+  ASSERT_EQ(v1[3], 100);
+  ASSERT_EQ(v1[4], 100);
+  ASSERT_EQ(v1[5], 100);
+
+  it = v1.begin();
+  ft::vector<int> v2(2, 400);
+  v1.insert(it + 2, v2.begin(), v2.end());
+  ASSERT_EQ(v1.size(), 8);
+  ASSERT_EQ(v1[0], 300);
+  ASSERT_EQ(v1[1], 300);
+  ASSERT_EQ(v1[2], 400);
+  ASSERT_EQ(v1[3], 400);
+  ASSERT_EQ(v1[4], 200);
+  ASSERT_EQ(v1[5], 100);
+  ASSERT_EQ(v1[6], 100);
+  ASSERT_EQ(v1[7], 100);
+
+  int arr1[] = {501, 502, 503};
+  v1.insert(v1.begin(), arr1, arr1 + 3);
+  ASSERT_EQ(v1.size(), 11);
+  ASSERT_EQ(v1[0], 501);
+  ASSERT_EQ(v1[1], 502);
+  ASSERT_EQ(v1[2], 503);
+  ASSERT_EQ(v1[3], 300);
+  ASSERT_EQ(v1[4], 300);
+  ASSERT_EQ(v1[5], 400);
+  ASSERT_EQ(v1[6], 400);
+  ASSERT_EQ(v1[7], 200);
+  ASSERT_EQ(v1[8], 100);
+  ASSERT_EQ(v1[9], 100);
+  ASSERT_EQ(v1[10], 100);
+
+  ft::vector<int> v3(2, 500);
+  v3.insert(v3.begin() + 1, 250);
+  ASSERT_EQ(v3.size(), 3);
+  ASSERT_EQ(v3[0], 500);
+  ASSERT_EQ(v3[1], 250);
+  ASSERT_EQ(v3[2], 500);
 }
