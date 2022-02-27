@@ -1,6 +1,7 @@
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
+#include "algorithm.hpp"
 #include "iterator.hpp"
 #include "random_access_iterator.hpp"
 #include "type_traits.hpp"
@@ -317,9 +318,9 @@ public:
   };
 
   void swap(vector &x) {
-    std::swap(_data, x._data);
-    std::swap(_size, x._size);
-    std::swap(_capacity, x._capacity);
+    ft::swap(_data, x._data);
+    ft::swap(_size, x._size);
+    ft::swap(_capacity, x._capacity);
   };
 
   void clear() {
@@ -347,17 +348,38 @@ bool operator==(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
   if (lhs.size() != rhs.size()) {
     return false;
   }
-  for (size_t i = 0; i < rhs.size(); i++) {
-    if (lhs[i] != rhs[i]) {
-      return false;
-    }
-  }
-  return true;
+  return ft::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
 template <class T, class Alloc>
 bool operator!=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
   return !(lhs == rhs);
+}
+
+template <class T, class Alloc>
+bool operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(),
+                                     rhs.end());
+}
+
+template <class T, class Alloc>
+bool operator>(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return rhs < lhs;
+}
+
+template <class T, class Alloc>
+bool operator<=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return !(rhs < lhs);
+}
+
+template <class T, class Alloc>
+bool operator>=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return !(lhs < rhs);
+}
+
+template <class T, class Alloc>
+void swap(vector<T, Alloc> &x, vector<T, Alloc> &y) {
+  x.swap(y);
 }
 
 } // namespace ft

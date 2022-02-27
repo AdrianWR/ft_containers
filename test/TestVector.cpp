@@ -7,7 +7,7 @@
 
 ft::vector<int>::size_type init_capacity = 0;
 
-TEST(TestVector, TestVectorDefaultConstructor) {
+TEST(TestVectorConstructors, TestVectorDefaultConstructor) {
   ft::vector<int> v1;
   ft::vector<std::string> v2;
   ft::vector<float, std::allocator<float>> v3;
@@ -20,7 +20,7 @@ TEST(TestVector, TestVectorDefaultConstructor) {
   ASSERT_EQ(v3.capacity(), init_capacity);
 }
 
-TEST(TestVector, TestVectorFillConstructor) {
+TEST(TestVectorConstructors, TestVectorFillConstructor) {
   ft::vector<int> v1(10);
   ft::vector<std::string> v2(10, "test");
   std::allocator<float> alloc;
@@ -42,7 +42,7 @@ TEST(TestVector, TestVectorFillConstructor) {
   ASSERT_EQ(v3[9], 1.0f);
 }
 
-TEST(TestVector, TestVectorRangeConstructor) {
+TEST(TestVectorConstructors, TestVectorRangeConstructor) {
   int arr1[] = {1, 2, 3, 4, 5};
   std::string arr2[] = {"one", "two", "three", "four", "five"};
   float arr3[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
@@ -54,11 +54,9 @@ TEST(TestVector, TestVectorRangeConstructor) {
   int cap = std::max<int>(init_capacity, 5);
   ASSERT_EQ(v1.size(), 5);
   ASSERT_EQ(v1.capacity(), cap);
-  ASSERT_EQ(v1[0], 1);
-  ASSERT_EQ(v1[1], 2);
-  ASSERT_EQ(v1[2], 3);
-  ASSERT_EQ(v1[3], 4);
-  ASSERT_EQ(v1[4], 5);
+  for (int i = 0; i < 5; ++i) {
+    ASSERT_EQ(v1[i], i + 1);
+  }
 
   ASSERT_EQ(v2.size(), 5);
   ASSERT_EQ(v2.capacity(), cap);
@@ -71,7 +69,7 @@ TEST(TestVector, TestVectorRangeConstructor) {
   ASSERT_FLOAT_EQ(v3[4], 5.0f);
 }
 
-TEST(TestVector, TestVectorCopyConstructor) {
+TEST(TestVectorConstructors, TestVectorCopyConstructor) {
   int arr1[] = {1, 2, 3, 4, 5};
   std::string arr2[] = {"one", "two", "three", "four", "five"};
   float arr3[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
@@ -104,7 +102,7 @@ TEST(TestVector, TestVectorCopyConstructor) {
   ASSERT_FLOAT_EQ(v6[4], 5.0f);
 }
 
-TEST(TestVector, TestVectorDestructor) {
+TEST(TestVectorDesctructor, TestVectorDestructor) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
 
@@ -112,7 +110,7 @@ TEST(TestVector, TestVectorDestructor) {
   delete v2; // No memory leak; assert not possible
 }
 
-TEST(TestVector, TestVectorAssignmentOperator) {
+TEST(TestVectorAssignementOperator, TestVectorAssignmentOperator) {
   char arr1[] = {'a', 'b', 'c', 'd', 'e'};
   std::string arr2[] = {"one", "two", "three", "four", "five"};
   float arr3[] = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f};
@@ -131,43 +129,36 @@ TEST(TestVector, TestVectorAssignmentOperator) {
 
   ASSERT_EQ(v4.size(), v1.size());
   ASSERT_EQ(v4.capacity(), v1.capacity());
-  ASSERT_EQ(v4[0], 'a');
-  ASSERT_EQ(v4[1], 'b');
-  ASSERT_EQ(v4[2], 'c');
-  ASSERT_EQ(v4[3], 'd');
-  ASSERT_EQ(v4[4], 'e');
+  for (int i = 0; i < v1.size(); ++i) {
+    ASSERT_EQ(v4[i], v1[i]);
+  }
 
   ASSERT_EQ(v5.size(), v2.size());
   ASSERT_EQ(v5.capacity(), v2.capacity());
-  ASSERT_EQ(v5[0], "one");
-  ASSERT_EQ(v5[1], "two");
-  ASSERT_EQ(v5[2], "three");
-  ASSERT_EQ(v5[3], "four");
-  ASSERT_EQ(v5[4], "five");
+  for (int i = 0; i < v2.size(); ++i) {
+    ASSERT_EQ(v5[i], v2[i]);
+  }
 
   ASSERT_EQ(v6.size(), v3.size());
   ASSERT_EQ(v6.capacity(), v3.capacity());
-  ASSERT_FLOAT_EQ(v6[0], 1.0f);
-  ASSERT_FLOAT_EQ(v6[4], 5.0f);
+  for (int i = 0; i < v3.size(); ++i) {
+    ASSERT_FLOAT_EQ(v6[i], v3[i]);
+  }
 
   v1 = v1;
-
   ASSERT_EQ(v1.size(), 5);
   ASSERT_EQ(v1.capacity(), std::max<unsigned int>(init_capacity, 5));
-  ASSERT_EQ(v1[0], 'a');
-  ASSERT_EQ(v1[1], 'b');
-  ASSERT_EQ(v1[2], 'c');
-  ASSERT_EQ(v1[3], 'd');
-  ASSERT_EQ(v1[4], 'e');
+  for (int i = 0; i < 5; ++i) {
+    ASSERT_EQ(v1[i], i + 'a');
+  }
 
   ft::vector<int> v7;
   ft::vector<int> v8;
   v7 = v8;
   ASSERT_EQ(v7.size(), 0);
-  ASSERT_EQ(v7.capacity(), init_capacity);
 }
 
-TEST(TestVector, TestVectorBegin) {
+TEST(TestVectorIterators, TestVectorBegin) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
   ft::vector<int>::iterator it = v1.begin();
@@ -195,7 +186,7 @@ TEST(TestVector, TestVectorBegin) {
   ASSERT_EQ(it4, v4.end());
 }
 
-TEST(TestVector, TestVectorEnd) {
+TEST(TestVectorIterators, TestVectorEnd) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
   ft::vector<int>::iterator it = v1.end();
@@ -223,7 +214,7 @@ TEST(TestVector, TestVectorEnd) {
   ASSERT_EQ(it4, v4.begin());
 }
 
-TEST(TestVector, TestVectorRBegin) {
+TEST(TestVectorIterators, TestVectorRBegin) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
   ft::vector<int>::iterator it = v1.begin();
@@ -236,7 +227,7 @@ TEST(TestVector, TestVectorRBegin) {
   }
 }
 
-TEST(TestVector, TestVectorREnd) {
+TEST(TestVectorIterators, TestVectorREnd) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
   ft::vector<int>::iterator it = v1.begin();
@@ -251,7 +242,7 @@ TEST(TestVector, TestVectorREnd) {
   }
 }
 
-TEST(TestVector, TestVectorSize) {
+TEST(TestVectorCapacity, TestVectorSize) {
 
   ft::vector<int> v0;
   ASSERT_EQ(v0.size(), 0);
@@ -264,7 +255,7 @@ TEST(TestVector, TestVectorSize) {
   ASSERT_EQ(v2.size(), 5);
 }
 
-TEST(TestVector, TestVectorMaxSize) {
+TEST(TestVectorCapacity, TestVectorMaxSize) {
   std::allocator<int> alloc;
   ft::vector<int> v0(alloc);
   ASSERT_EQ(v0.max_size(), alloc.max_size());
@@ -275,7 +266,7 @@ TEST(TestVector, TestVectorMaxSize) {
   ASSERT_LE(v1.size(), v1.max_size());
 }
 
-TEST(TestVector, TestVectorResize) {
+TEST(TestVectorCapacity, TestVectorResize) {
   ft::vector<int> v0;
   ASSERT_EQ(v0.size(), 0);
 
@@ -307,7 +298,7 @@ TEST(TestVector, TestVectorResize) {
   ASSERT_EQ(v0[11], 0);
 }
 
-TEST(TestVector, TestVectorCapacity) {
+TEST(TestVectorCapacity, TestVectorCapacity) {
   ft::vector<int> v0;
   ASSERT_EQ(v0.capacity(), init_capacity);
 
@@ -321,7 +312,7 @@ TEST(TestVector, TestVectorCapacity) {
   ASSERT_EQ(v2.capacity(), 24);
 }
 
-TEST(TestVector, TestEmpty) {
+TEST(TestVectorCapacity, TestEmpty) {
   ft::vector<int> v0;
   ASSERT_TRUE(v0.empty());
 
@@ -332,7 +323,7 @@ TEST(TestVector, TestEmpty) {
   ASSERT_FALSE(v2.empty());
 }
 
-TEST(TestVector, TestVectorReserve) {
+TEST(TestVectorCapacity, TestVectorReserve) {
   ft::vector<int> v0;
   ASSERT_EQ(v0.capacity(), init_capacity);
 
@@ -345,7 +336,7 @@ TEST(TestVector, TestVectorReserve) {
   ASSERT_EQ(v1.capacity(), 41);
 }
 
-TEST(TestVector, TestVectorElementAccess) {
+TEST(TestVectorElementAccess, TestVectorElementAccess) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
   v1.reserve(56);
@@ -374,7 +365,7 @@ TEST(TestVector, TestVectorElementAccess) {
   ASSERT_EQ(v1.size(), 5);
 }
 
-TEST(TestVector, TestVectorAt) {
+TEST(TestVectorElementAccess, TestVectorAt) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
   ASSERT_EQ(v1.at(0), 1);
@@ -393,7 +384,7 @@ TEST(TestVector, TestVectorAt) {
   ASSERT_THROW(v2.at(5), std::out_of_range);
 }
 
-TEST(TestVector, TestVectorFront) {
+TEST(TestVectorElementAccess, TestVectorFront) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
   ASSERT_EQ(v1.front(), 1);
@@ -402,7 +393,7 @@ TEST(TestVector, TestVectorFront) {
   ASSERT_EQ(v2.front(), 1);
 }
 
-TEST(TestVector, TestVectorBack) {
+TEST(TestVectorElementAccess, TestVectorBack) {
   int arr1[] = {1, 2, 3, 4, 5};
   ft::vector<int> v1(arr1, arr1 + 5);
   ASSERT_EQ(v1.back(), 5);
@@ -411,22 +402,23 @@ TEST(TestVector, TestVectorBack) {
   ASSERT_EQ(v2.back(), 5);
 }
 
-TEST(TestVector, TestVectorAssign) {
+TEST(TestVectorModifiers, TestVectorAssign) {
   ft::vector<int> v1;
   ft::vector<int> v2;
   ft::vector<int> v3;
 
   v1.assign(7, 100);
   ASSERT_EQ(v1.size(), 7);
-  ASSERT_EQ(v1[0], 100);
-  ASSERT_EQ(v1[1], 100);
-  ASSERT_EQ(v1[2], 100);
+  for (int i = 0; i < 7; ++i) {
+    ASSERT_EQ(v1[i], 100);
+  }
 
   ft::vector<int>::iterator it = v1.begin() + 1;
   v2.assign(it, v1.end() - 1);
   ASSERT_EQ(v2.size(), 5);
-  ASSERT_EQ(v2[0], 100);
-  ASSERT_EQ(v2[4], 100);
+  for (int i = 0; i < 5; ++i) {
+    ASSERT_EQ(v2[i], 100);
+  }
 
   int myints[] = {1776, 7, 4};
   v3.assign(myints, myints + 3);
@@ -436,7 +428,7 @@ TEST(TestVector, TestVectorAssign) {
   ASSERT_EQ(v3[2], 4);
 }
 
-TEST(TestVector, TestVectorPushBack) {
+TEST(TestVectorModifiers, TestVectorPushBack) {
   ft::vector<int> v1;
   v1.push_back(42);
   ASSERT_EQ(v1.size(), 1);
@@ -453,7 +445,7 @@ TEST(TestVector, TestVectorPushBack) {
   ASSERT_EQ(v3[12], 43);
 }
 
-TEST(TestVector, TestVectorPopBack) {
+TEST(TestVectorModifiers, TestVectorPopBack) {
   ft::vector<int> v1;
   ASSERT_THROW(v1.pop_back(), std::out_of_range);
 
@@ -466,7 +458,7 @@ TEST(TestVector, TestVectorPopBack) {
   ASSERT_EQ(v3.size(), 11);
 }
 
-TEST(TestVector, TestVectorInsert) {
+TEST(TestVectorModifiers, TestVectorInsert) {
   ft::vector<int> v1(3, 100);
   ft::vector<int>::iterator it = v1.begin();
 
@@ -520,4 +512,140 @@ TEST(TestVector, TestVectorInsert) {
   ASSERT_EQ(v3[0], 500);
   ASSERT_EQ(v3[1], 250);
   ASSERT_EQ(v3[2], 500);
+}
+
+TEST(TestVectorModifiers, TestVectorErase) {
+  int arr1[] = {1, 2, 3, 4, 5};
+  ft::vector<int> v1(arr1, arr1 + 5);
+  ft::vector<int>::iterator it = v1.begin();
+
+  it = v1.erase(it + 2);
+  ASSERT_EQ(v1.size(), 4);
+  ASSERT_EQ(v1[0], 1);
+  ASSERT_EQ(v1[1], 2);
+  ASSERT_EQ(v1[2], 4);
+  ASSERT_EQ(v1[3], 5);
+
+  it = v1.begin();
+  it = v1.erase(it + 1, v1.end());
+  ASSERT_EQ(v1.size(), 1);
+  ASSERT_EQ(v1[0], 1);
+
+  ft::vector<int> v2(3, 200);
+  it = v2.begin();
+  it = v2.erase(it, it + 2);
+  ASSERT_EQ(v2.size(), 1);
+  ASSERT_EQ(v2[0], 200);
+
+  ft::vector<int> v3(3, 300);
+  it = v3.begin();
+  it = v3.erase(it + 1);
+  ASSERT_EQ(v3.size(), 2);
+  ASSERT_EQ(v3[0], 300);
+  ASSERT_EQ(v3[1], 300);
+}
+
+TEST(TestVectorModifiers, TestVectorSwap) {
+  ft::vector<int> v1(3, 100);
+  ft::vector<int> v2(5, 200);
+  v1.swap(v2);
+  ASSERT_EQ(v1.size(), 5);
+  for (int i = 0; i < 5; ++i) {
+    ASSERT_EQ(v1[i], 200);
+  }
+  ASSERT_EQ(v2.size(), 3);
+  for (int i = 0; i < 3; ++i) {
+    ASSERT_EQ(v2[i], 100);
+  }
+}
+
+TEST(TestVectorModifiers, TestVectorClear) {
+  ft::vector<int> v1;
+
+  v1.push_back(100);
+  v1.push_back(200);
+  v1.push_back(300);
+
+  ASSERT_EQ(v1.size(), 3);
+  ASSERT_EQ(v1[0], 100);
+  ASSERT_EQ(v1[1], 200);
+  ASSERT_EQ(v1[2], 300);
+
+  v1.clear();
+  ASSERT_EQ(v1.size(), 0);
+
+  v1.push_back(1101);
+  v1.push_back(2202);
+  ASSERT_EQ(v1[0], 1101);
+  ASSERT_EQ(v1[1], 2202);
+}
+
+TEST(TestVectorGetAllocator, TestVectorGetAllocator) {
+  ft::vector<int> v;
+  int *p;
+  unsigned int i;
+
+  p = v.get_allocator().allocate(5);
+  for (i = 0; i < 5; i++) {
+    v.get_allocator().construct(&p[i], i);
+  }
+  for (i = 0; i < 5; i++) {
+    ASSERT_EQ(p[i], i);
+  }
+  for (i = 0; i < 5; i++) {
+    v.get_allocator().destroy(&p[i]);
+  }
+  v.get_allocator().deallocate(p, 5);
+}
+
+TEST(TestVectorNonMemberFunctions, TestVectorRelationalOperators) {
+  ft::vector<int> v1(3, 100);
+  ft::vector<int> v2(3, 100);
+  ft::vector<int> v3(2, 200);
+  ft::vector<int> v4(3, 300);
+  ft::vector<int> v5(3, 400);
+
+  ASSERT_TRUE(v1 == v2);
+  ASSERT_FALSE(v1 == v3);
+  ASSERT_FALSE(v1 == v4);
+  ASSERT_FALSE(v1 == v5);
+
+  ASSERT_FALSE(v1 != v2);
+  ASSERT_TRUE(v1 != v3);
+  ASSERT_TRUE(v1 != v4);
+  ASSERT_TRUE(v1 != v5);
+
+  ASSERT_FALSE(v1 < v2);
+  ASSERT_TRUE(v1 < v3);
+  ASSERT_TRUE(v1 < v4);
+  ASSERT_TRUE(v1 < v5);
+
+  ASSERT_TRUE(v1 <= v2);
+  ASSERT_TRUE(v1 <= v3);
+  ASSERT_TRUE(v1 <= v4);
+  ASSERT_TRUE(v1 <= v5);
+
+  ASSERT_FALSE(v1 > v2);
+  ASSERT_FALSE(v1 > v3);
+  ASSERT_FALSE(v1 > v4);
+  ASSERT_FALSE(v1 > v5);
+
+  ASSERT_TRUE(v1 >= v2);
+  ASSERT_FALSE(v1 >= v3);
+  ASSERT_FALSE(v1 >= v4);
+  ASSERT_FALSE(v1 >= v5);
+}
+
+TEST(TestVectorNonMemberFunctions, TestVectorSwapOverload) {
+  ft::vector<int> v1(3, 100);
+  ft::vector<int> v2(5, 200);
+  ft::swap(v1, v2);
+  ASSERT_EQ(v1.size(), 5);
+  for (int i = 0; i < 5; ++i) {
+    ASSERT_EQ(v1[i], 200);
+  }
+  ASSERT_EQ(v2.size(), 3);
+  for (int i = 0; i < 3; ++i) {
+    ASSERT_EQ(v2[i], 100);
+  }
 }
