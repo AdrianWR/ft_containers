@@ -2,20 +2,21 @@
 #define ITERATOR_HPP
 
 #include <cstddef>
+#include <iterator>
 
 namespace ft {
 
 typedef std::ptrdiff_t ptrdiff_t;
 
-struct input_iterator_tag {};
+typedef std::input_iterator_tag input_iterator_tag;
 
-struct output_iterator_tag {};
+typedef std::output_iterator_tag output_iterator_tag;
 
-struct forward_iterator_tag {};
+typedef std::forward_iterator_tag forward_iterator_tag;
 
-struct bidirectional_iterator_tag {};
+typedef std::bidirectional_iterator_tag bidirectional_iterator_tag;
 
-struct random_access_iterator_tag {};
+typedef std::random_access_iterator_tag random_access_iterator_tag;
 
 template <class Category, class T, class Distance = ft::ptrdiff_t,
           class Pointer = T *, class Reference = T &>
@@ -49,7 +50,7 @@ public:
 template <class T> class iterator_traits<const T *> {
 public:
   typedef T value_type;
-  typedef std::ptrdiff_t difference_type;
+  typedef ptrdiff_t difference_type;
   typedef const T *pointer;
   typedef const T &reference;
   typedef ft::random_access_iterator_tag iterator_category;
