@@ -444,91 +444,94 @@ public:
   }
 
 private:
-  void _remove(node_ptr node) {
-    node_ptr y = node;
-    node_ptr x = _nil;
-    node_ptr x_parent = _nil;
+  void _remove(node_ptr z) {
+    node_ptr x;
+    node_ptr y = z;
     color y_original_color = y->color();
-    if (node->left() == _nil) {
-      x = node->right();
-      _transplant(node, node->right());
-    } else if (node->right() == _nil) {
-      x = node->left();
-      _transplant(node, node->left());
+    if (z->left() == _nil) {
+      x = z->right();
+      _transplant(z, z->right());
+    } else if (z->right() == _nil) {
+      x = z->left();
+      _transplant(z, z->left());
     } else {
-      y = node->previous();
+      y = _minimum(z->right());
       y_original_color = y->color();
       x = y->right();
-      if (y->parent() == node) {
-        x_parent = y;
+      if (y->parent() == z) {
+        x->set_parent(y);
       } else {
         _transplant(y, y->right());
-        y->set_right(node->right());
+        y->set_right(z->right());
         y->right()->set_parent(y);
       }
-      _transplant(node, y);
-      y->set_left(node->left());
+      _transplant(z, y);
+      y->set_left(z->left());
       y->left()->set_parent(y);
-      y->set_color(node->color());
+      y->set_color(z->color());
     }
     if (y_original_color == BLACK) {
-      _remove_fixup(x, x_parent);
+      _remove_fixup(x);
     }
   }
 
-  void _remove_fixup(node_ptr node, node_ptr node_parent) {
-    while (node != _root && node->color() == BLACK) {
-      if (node == node_parent->left()) {
-        node_ptr w = node_parent->right();
+  void _remove_fixup(node_ptr x) {
+    node_ptr w;
+    while (x != _root && x->color() == BLACK) {
+      if (x == x->parent()->left()) {
+        w = x->parent()->right();
         if (w->color() == RED) {
           w->set_color(BLACK);
-          node_parent->set_color(RED);
-          _left_rotate(node_parent);
-          w = node_parent->right();
+          x->parent()->set_color(RED);
+          _left_rotate(x->parent());
+          w = x->parent()->right();
         }
         if (w->left()->color() == BLACK && w->right()->color() == BLACK) {
           w->set_color(RED);
-          node = node_parent;
-        } else {
-          if (w->right()->color() == BLACK) {
-            w->left()->set_color(BLACK);
-            w->set_color(RED);
-            _right_rotate(w);
-            w = node_parent->right();
-          }
-          w->set_color(node_parent->color());
-          node_parent->set_color(BLACK);
-          w->right()->set_color(BLACK);
-          _left_rotate(node_parent);
-          node = _root;
+          x = x->parent();
+        } else if (w->right()->color() == BLACK) {
+          w->left()->set_color(BLACK);
+          w->set_color(RED);
+          _right_rotate(w);
+          w = x->parent()->right();
         }
+        w->set_color(x->parent()->color());
+        x->parent()->set_color(BLACK);
+        w->right()->set_color(BLACK);
+        _left_rotate(x->parent());
+        x = _root;
       } else {
-        node_ptr w = node_parent->left();
+        w = x->parent()->left();
         if (w->color() == RED) {
           w->set_color(BLACK);
-          node_parent->set_color(RED);
-          _right_rotate(node_parent);
-          w = node_parent->left();
+          x->parent()->set_color(RED);
+          _right_rotate(x->parent());
+          w = x->parent()->left();
         }
         if (w->right()->color() == BLACK && w->left()->color() == BLACK) {
           w->set_color(RED);
-          node = node_parent;
-        } else {
-          if (w->left()->color() == BLACK) {
-            w->right()->set_color(BLACK);
-            w->set_color(RED);
-            _left_rotate(w);
-            w = node_parent->left();
-          }
-          w->set_color(node_parent->color());
-          node_parent->set_color(BLACK);
-          w->left()->set_color(BLACK);
-          _right_rotate(node_parent);
-          node = _root;
+          x = x->parent();
+        } else if (w->left()->color() == BLACK) {
+          w->right()->set_color(BLACK);
+          w->set_color(RED);
+          _left_rotate(w);
+          w = x->parent()->left();
         }
+        w->set_color(x->parent()->color());
+        x->parent()->set_color(BLACK);
+        w->left()->set_color(BLACK);
+        _right_rotate(x->parent());
+        x = _root;
       }
     }
-    node->set_color(BLACK);
+    x->set_color(BLACK);
+  }
+
+  node_ptr _minimum(node_ptr z) const {
+    while (z->left() != _nil) {
+      z = z->left();
+    }
+    return z;
   }
 
   void _transplant(node_ptr u, node_ptr v) {

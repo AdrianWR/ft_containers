@@ -269,8 +269,4 @@ TEST_F(TestTree, TestFind) {
 TEST_F(TestTree, TestRemove) {
   tree.remove(13);
   EXPECT_EQ(tree.get_root()->value(), 15);
-  // EXPECT_EQ(tree.get_root()->color(), ft::color::BLACK);
-  // EXPECT_EQ(tree.get_root()->parent(), tree.get_nil());
-  // EXPECT_EQ(tree.get_root()->left()->value(), 11);
-  // EXPECT_EQ(tree.get_root()->right()->value(), 17);
 }
