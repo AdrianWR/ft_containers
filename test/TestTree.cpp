@@ -33,36 +33,36 @@ public:
     n25 = new ft::Node<int>(25, ft::color::BLACK);
     n22 = new ft::Node<int>(22, ft::color::RED);
     n27 = new ft::Node<int>(27, ft::color::RED);
-    n13->parent(ft::_nullptr);
-    n13->left(n8);
-    n13->right(n17);
-    n8->parent(n13);
-    n8->left(n1);
-    n8->right(n11);
-    n1->parent(n8);
-    n1->left(ft::_nullptr);
-    n1->right(n6);
-    n6->parent(n1);
-    n6->left(ft::_nullptr);
-    n6->right(ft::_nullptr);
-    n11->parent(n8);
-    n11->left(ft::_nullptr);
-    n11->right(ft::_nullptr);
-    n17->parent(n13);
-    n17->left(n15);
-    n17->right(n25);
-    n15->parent(n17);
-    n15->left(ft::_nullptr);
-    n15->right(ft::_nullptr);
-    n25->parent(n17);
-    n25->left(n22);
-    n25->right(n27);
-    n22->parent(n25);
-    n22->left(ft::_nullptr);
-    n22->right(ft::_nullptr);
-    n27->parent(n25);
-    n27->left(ft::_nullptr);
-    n27->right(ft::_nullptr);
+    n13->set_parent(ft::_nullptr);
+    n13->set_left(n8);
+    n13->set_right(n17);
+    n8->set_parent(n13);
+    n8->set_left(n1);
+    n8->set_right(n11);
+    n1->set_parent(n8);
+    n1->set_left(ft::_nullptr);
+    n1->set_right(n6);
+    n6->set_parent(n1);
+    n6->set_left(ft::_nullptr);
+    n6->set_right(ft::_nullptr);
+    n11->set_parent(n8);
+    n11->set_left(ft::_nullptr);
+    n11->set_right(ft::_nullptr);
+    n17->set_parent(n13);
+    n17->set_left(n15);
+    n17->set_right(n25);
+    n15->set_parent(n17);
+    n15->set_left(ft::_nullptr);
+    n15->set_right(ft::_nullptr);
+    n25->set_parent(n17);
+    n25->set_left(n22);
+    n25->set_right(n27);
+    n22->set_parent(n25);
+    n22->set_left(ft::_nullptr);
+    n22->set_right(ft::_nullptr);
+    n27->set_parent(n25);
+    n27->set_left(ft::_nullptr);
+    n27->set_right(ft::_nullptr);
   }
 
   void TearDown() {
@@ -128,56 +128,149 @@ TEST(TestNode, TestNodeConstructor) {
   EXPECT_EQ(node5.color(), ft::color::RED);
 }
 
-TEST_F(TestNodeIterator, TestNodeIterator) {
-  ft::Node<int> *root = n13;
-  EXPECT_EQ(root->minimum(), n1);
-  EXPECT_EQ(root->maximum(), n27);
-  EXPECT_EQ(root->previous(), n11);
-  EXPECT_EQ(root->next(), n15);
+TEST_F(TestNodeIterator, TestNodeIteratorConstructor) {
+  ft::NodeIterator<int> it;
 
-  EXPECT_EQ(n1->next(), n6);
-  EXPECT_EQ(n6->next(), n8);
-  EXPECT_EQ(n8->next(), n11);
-  EXPECT_EQ(n11->next(), n13);
-  EXPECT_EQ(n13->next(), n15);
-  EXPECT_EQ(n15->next(), n17);
-  EXPECT_EQ(n17->next(), n22);
-  EXPECT_EQ(n22->next(), n25);
-  EXPECT_EQ(n25->next(), n27);
+  ft::NodeIterator<int> it2(n13);
+  EXPECT_EQ(*it2, 13);
 
-  EXPECT_EQ(n27->previous(), n25);
-  EXPECT_EQ(n25->previous(), n22);
-  EXPECT_EQ(n22->previous(), n17);
-  EXPECT_EQ(n17->previous(), n15);
-  EXPECT_EQ(n15->previous(), n13);
-  EXPECT_EQ(n13->previous(), n11);
-  EXPECT_EQ(n11->previous(), n8);
-  EXPECT_EQ(n8->previous(), n6);
-  EXPECT_EQ(n6->previous(), n1);
+  it = it2;
+  EXPECT_EQ(*it, 13);
 }
 
-// TEST(TestTree, TestTreeDefaultConstructor) {
-//   ft::RedBlackTree<int> tree;
-//   EXPECT_EQ(tree.get_root()->parent, ft::_nullptr);
-//   EXPECT_EQ(tree.get_root()->left, ft::_nullptr);
-//   EXPECT_EQ(tree.get_root()->right, ft::_nullptr);
-// }
-//
-// TEST(TestTree, TestTreeValueConstructor) {
-//   ft::RedBlackTree<int> tree(42);
-//   EXPECT_EQ(tree.get_root()->value(), 42);
-//   EXPECT_EQ(tree.get_root()->parent, ft::_nullptr);
-//   EXPECT_EQ(tree.get_root()->left, ft::_nullptr);
-//   EXPECT_EQ(tree.get_root()->right, ft::_nullptr);
-//   EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);
-// }
+TEST_F(TestNodeIterator, TestNodeIteratorComparisonOperator) {
+  ft::NodeIterator<int> it1(n13);
+  ft::NodeIterator<int> it2(n13);
+  ft::NodeIterator<int> it3(n8);
+
+  EXPECT_TRUE(it1 == it2);
+  EXPECT_FALSE(it1 == it3);
+  EXPECT_FALSE(it1 != it2);
+  EXPECT_TRUE(it1 != it3);
+}
+
+TEST_F(TestNodeIterator, TestNodeIteratorIncrement) {
+  ft::NodeIterator<int> it(n1);
+
+  EXPECT_EQ(*it, 1);
+  ++it;
+  EXPECT_EQ(*it, 6);
+  ++it;
+  EXPECT_EQ(*it, 8);
+  ++it;
+  EXPECT_EQ(*it, 11);
+  ++it;
+  EXPECT_EQ(*it, 13);
+  EXPECT_EQ(*it++, 13);
+  EXPECT_EQ(*it++, 15);
+  EXPECT_EQ(*it++, 17);
+  EXPECT_EQ(*it++, 22);
+  EXPECT_EQ(*it++, 25);
+  EXPECT_EQ(*it, 27);
+}
+
+TEST_F(TestNodeIterator, TestNodeIteratorDecrement) {
+  ft::NodeIterator<int> it2(n27);
+
+  EXPECT_EQ(*it2, 27);
+  --it2;
+  EXPECT_EQ(*it2, 25);
+  --it2;
+  EXPECT_EQ(*it2, 22);
+  it2--;
+  EXPECT_EQ(*it2, 17);
+  it2--;
+  EXPECT_EQ(*it2--, 15);
+  EXPECT_EQ(*it2--, 13);
+  EXPECT_EQ(*it2--, 11);
+  EXPECT_EQ(*it2--, 8);
+  EXPECT_EQ(*it2--, 6);
+  EXPECT_EQ(*it2, 1);
+}
+
+TEST(TestTreeConstructor, TestTreeDefaultConstructor) {
+  ft::RedBlackTree<int> tree;
+  EXPECT_EQ(tree.get_root()->color(), ft::color::BLACK);
+}
+
+TEST(TestTreeConstructor, TestTreeValueConstructor) {
+  ft::RedBlackTree<int> tree(42);
+  EXPECT_EQ(tree.get_root()->value(), 42);
+  EXPECT_EQ(tree.get_root()->parent(), tree.get_nil());
+  EXPECT_EQ(tree.get_root()->left(), tree.get_nil());
+  EXPECT_EQ(tree.get_root()->right(), tree.get_nil());
+  EXPECT_EQ(tree.get_root()->color(), ft::color::BLACK);
+}
 
 // TEST(TestTree, TestTreeCopyConstructor) {
 //   ft::RedBlackTree<int> tree(42);
 //   ft::RedBlackTree<int> tree_copy(tree);
 //   EXPECT_EQ(tree_copy.get_root()->value(), 42);
-//   EXPECT_EQ(tree_copy.get_root()->parent, ft::_nullptr);
-//   EXPECT_EQ(tree_copy.get_root()->left, ft::_nullptr);
-//   EXPECT_EQ(tree_copy.get_root()->right, ft::_nullptr);
-//   EXPECT_EQ(tree_copy.get_root()->color, ft::color::BLACK);
+//   EXPECT_EQ(tree_copy.get_root()->parent(), tree.get_root()->parent());
+//   EXPECT_EQ(tree_copy.get_root()->left(), tree.get_root()->left());
+//   EXPECT_EQ(tree_copy.get_root()->right(), tree.get_root()->right());
+//   EXPECT_EQ(tree_copy.get_root()->color(), tree.get_root()->color());
 // }
+
+class TestTree : public ::testing::Test {
+public:
+  ft::RedBlackTree<int> tree;
+
+  void SetUp() override {
+    tree.insert(13);
+    tree.insert(17);
+    tree.insert(8);
+    tree.insert(11);
+    tree.insert(15);
+    tree.insert(22);
+    tree.insert(1);
+    tree.insert(25);
+    tree.insert(6);
+    tree.insert(27);
+  }
+};
+
+TEST_F(TestTree, TestTreeInsert) {
+  EXPECT_EQ(tree.get_root()->value(), 13);
+  EXPECT_EQ(tree.get_root()->color(), ft::color::BLACK);
+  EXPECT_EQ(tree.get_root()->parent(), tree.get_nil());
+  EXPECT_EQ(tree.get_root()->left()->value(), 8);
+  EXPECT_EQ(tree.get_root()->left()->color(), ft::color::RED);
+  EXPECT_EQ(tree.get_root()->left()->left()->value(), 1);
+  EXPECT_EQ(tree.get_root()->left()->left()->color(), ft::color::BLACK);
+  EXPECT_EQ(tree.get_root()->left()->left()->right()->value(), 6);
+  EXPECT_EQ(tree.get_root()->left()->left()->right()->color(), ft::color::RED);
+  EXPECT_EQ(tree.get_root()->left()->right()->value(), 11);
+  EXPECT_EQ(tree.get_root()->left()->right()->color(), ft::color::BLACK);
+  EXPECT_EQ(tree.get_root()->right()->value(), 17);
+  EXPECT_EQ(tree.get_root()->right()->color(), ft::color::RED);
+  EXPECT_EQ(tree.get_root()->right()->left()->value(), 15);
+  EXPECT_EQ(tree.get_root()->right()->left()->color(), ft::color::BLACK);
+  EXPECT_EQ(tree.get_root()->right()->right()->value(), 25);
+  EXPECT_EQ(tree.get_root()->right()->right()->color(), ft::color::BLACK);
+  EXPECT_EQ(tree.get_root()->right()->right()->left()->value(), 22);
+  EXPECT_EQ(tree.get_root()->right()->right()->left()->color(), ft::color::RED);
+  EXPECT_EQ(tree.get_root()->right()->right()->right()->value(), 27);
+  EXPECT_EQ(tree.get_root()->right()->right()->right()->color(),
+            ft::color::RED);
+}
+
+TEST_F(TestTree, TestFind) {
+  ft::RedBlackTree<int>::iterator it = tree.find(13);
+
+  EXPECT_EQ(*it, 13);
+  it = tree.find(17);
+  EXPECT_EQ(*it, 17);
+
+  it = tree.find(-1);
+  EXPECT_EQ(it, tree.end());
+}
+
+TEST_F(TestTree, TestRemove) {
+  tree.remove(13);
+  EXPECT_EQ(tree.get_root()->value(), 15);
+  // EXPECT_EQ(tree.get_root()->color(), ft::color::BLACK);
+  // EXPECT_EQ(tree.get_root()->parent(), tree.get_nil());
+  // EXPECT_EQ(tree.get_root()->left()->value(), 11);
+  // EXPECT_EQ(tree.get_root()->right()->value(), 17);
+}
