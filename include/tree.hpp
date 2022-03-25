@@ -27,12 +27,11 @@ public:
   typedef const Node<T> &const_node_ref;
   typedef Alloc allocator_type;
 
-private:
   // Properties
-  node_ptr _parent;
-  node_ptr _left;
-  node_ptr _right;
-  enum color _color;
+  node_ptr parent;
+  node_ptr left;
+  node_ptr right;
+  enum color color;
   pointer _value_ptr;
   allocator_type _alloc;
 
@@ -41,38 +40,38 @@ public:
   explicit Node(enum color color = RED, node_ptr parent = _nullptr,
                 node_ptr left = _nullptr, node_ptr right = _nullptr,
                 allocator_type alloc = allocator_type())
-      : _value_ptr(_nullptr), _parent(parent), _left(left), _right(right),
-        _color(color), _alloc(alloc) {}
+      : _value_ptr(_nullptr), parent(parent), left(left), right(right),
+        color(color), _alloc(alloc) {}
 
   // Value constructor
   Node(value_type value, enum color color = RED, node_ptr parent = _nullptr,
        node_ptr left = _nullptr, node_ptr right = _nullptr,
        allocator_type alloc = allocator_type())
-      : _parent(parent), _left(left), _right(right), _color(color) {
+      : parent(parent), left(left), right(right), color(color) {
     _value_ptr = _alloc.allocate(1);
     _alloc.construct(_value_ptr, value);
   }
 
   // Copy constructor
-  Node(const Node &other)
-      : _value_ptr(_nullptr), _parent(other._parent), _left(other._left),
-        _right(other._right), _color(other._color), _alloc(other._alloc) {
-    if (other._value_ptr != _nullptr) {
+  Node(const Node &node)
+      : _value_ptr(_nullptr), parent(node.parent), left(node.left),
+        right(node.right), color(node.color), _alloc(node._alloc) {
+    if (node._value_ptr != _nullptr) {
       _value_ptr = _alloc.allocate(1);
-      _alloc.construct(_value_ptr, *other._value_ptr);
+      _alloc.construct(_value_ptr, *node._value_ptr);
     }
   }
 
   // Copy assignment operator
-  Node &operator=(const Node &other) {
-    if (this != &other) {
-      if (other._value_ptr != _nullptr) {
+  Node &operator=(const Node &node) {
+    if (this != &node) {
+      if (node._value_ptr != _nullptr) {
         if (_value_ptr != _nullptr) {
           _alloc.destroy(_value_ptr);
           _alloc.deallocate(_value_ptr, 1);
         }
         _value_ptr = _alloc.allocate(1);
-        _alloc.construct(_value_ptr, *other._value_ptr);
+        _alloc.construct(_value_ptr, *node._value_ptr);
       } else {
         if (_value_ptr != _nullptr) {
           _alloc.destroy(_value_ptr);
@@ -80,10 +79,10 @@ public:
         }
         _value_ptr = _nullptr;
       }
-      _parent = other._parent;
-      _left = other._left;
-      _right = other._right;
-      _color = other._color;
+      parent = node.parent;
+      left = node.left;
+      right = node.right;
+      color = node.color;
     }
     return *this;
   }
@@ -102,22 +101,6 @@ public:
 
   const_reference value() const { return *_value_ptr; }
 
-  node_ptr parent() { return _parent; }
-
-  const_node_ptr parent() const { return _parent; }
-
-  node_ptr left() { return _left; }
-
-  const_node_ptr left() const { return _left; }
-
-  node_ptr right() { return _right; }
-
-  const_node_ptr right() const { return _right; }
-
-  enum color color() { return _color; }
-
-  const_node_ptr color() const { return _color; }
-
   // Setters
 
   void value(value_type value) {
@@ -127,37 +110,6 @@ public:
       _alloc.destroy(_value_ptr);
     }
     _alloc.construct(_value_ptr, value);
-  }
-
-  void set_left(node_ptr left) { _left = left; }
-
-  void set_right(node_ptr right) { _right = right; }
-
-  void set_parent(node_ptr parent) { _parent = parent; }
-
-  void set_color(enum color color) { _color = color; }
-
-  node_ptr previous() {
-    node_ptr x;
-    node_ptr y;
-
-    x = this;
-    if (x->color() == ft::color::RED && x->parent()->parent() == x) {
-      x = x->right();
-    } else if (x->left() != _nullptr) {
-      y = x->left();
-      while (y->right() != _nullptr)
-        y = y->right();
-      x = y;
-    } else {
-      y = x->parent();
-      while (x == y->left()) {
-        x = y;
-        y = y->parent();
-      }
-      x = y;
-    }
-    return x;
   }
 };
 
@@ -218,17 +170,17 @@ public:
   self &operator++() {
     node_ptr y;
 
-    if (_node->right() != _nullptr) {
-      _node = _node->right();
-      while (_node->left() != _nullptr)
-        _node = _node->left();
+    if (_node->right != _nullptr) {
+      _node = _node->right;
+      while (_node->left != _nullptr)
+        _node = _node->left;
     } else {
-      y = _node->parent();
-      while (_node == y->right()) {
+      y = _node->parent;
+      while (_node == y->right) {
         _node = y;
-        y = y->parent();
+        y = y->parent;
       }
-      if (_node->right() != y)
+      if (_node->right != y)
         _node = y;
     }
     return *this;
@@ -243,19 +195,18 @@ public:
   self &operator--() {
     node_ptr y;
 
-    if (_node->color() == ft::color::RED &&
-        _node->parent()->parent() == _node) {
-      _node = _node->right();
-    } else if (_node->left() != _nullptr) {
-      y = _node->left();
-      while (y->right() != _nullptr)
-        y = y->right();
+    if (_node->color == ft::color::RED && _node->parent->parent == _node) {
+      _node = _node->right;
+    } else if (_node->left != _nullptr) {
+      y = _node->left;
+      while (y->right != _nullptr)
+        y = y->right;
       _node = y;
     } else {
-      y = _node->parent();
-      while (_node == y->left()) {
+      y = _node->parent;
+      while (_node == y->left) {
         _node = y;
-        y = y->parent();
+        y = y->parent;
       }
       _node = y;
     }
@@ -343,8 +294,8 @@ public:
 
   void _deallocate_tree(node_ptr node) {
     if (node != _nil) {
-      _deallocate_tree(node->left());
-      _deallocate_tree(node->right());
+      _deallocate_tree(node->left);
+      _deallocate_tree(node->right);
       _node_alloc.destroy(node);
       _node_alloc.deallocate(node, 1);
     }
@@ -370,8 +321,8 @@ public:
 
   iterator begin() {
     node_ptr node = _root;
-    while (node->left() != _nil) {
-      node = node->left();
+    while (node->left != _nil) {
+      node = node->left;
     }
     return iterator(node, _nil);
   }
@@ -380,8 +331,8 @@ public:
 
   iterator end() {
     node_ptr node = _root;
-    while (node->right() != _nil) {
-      node = node->right();
+    while (node->right != _nil) {
+      node = node->right;
     }
     return iterator(node, _nil);
   }
@@ -415,9 +366,9 @@ public:
       if (node->value() == value) {
         return node;
       } else if (value < node->value()) {
-        node = node->left();
+        node = node->left;
       } else {
-        node = node->right();
+        node = node->right;
       }
     }
     return _nil;
@@ -447,28 +398,28 @@ private:
   void _remove(node_ptr z) {
     node_ptr x;
     node_ptr y = z;
-    color y_original_color = y->color();
-    if (z->left() == _nil) {
-      x = z->right();
-      _transplant(z, z->right());
-    } else if (z->right() == _nil) {
-      x = z->left();
-      _transplant(z, z->left());
+    color y_original_color = y->color;
+    if (z->left == _nil) {
+      x = z->right;
+      _transplant(z, z->right);
+    } else if (z->right == _nil) {
+      x = z->left;
+      _transplant(z, z->left);
     } else {
-      y = _minimum(z->right());
-      y_original_color = y->color();
-      x = y->right();
-      if (y->parent() == z) {
-        x->set_parent(y);
+      y = _minimum(z->right);
+      y_original_color = y->color;
+      x = y->right;
+      if (y->parent == z) {
+        x->parent = y;
       } else {
-        _transplant(y, y->right());
-        y->set_right(z->right());
-        y->right()->set_parent(y);
+        _transplant(y, y->right);
+        y->right = z->right;
+        y->right->parent = y;
       }
       _transplant(z, y);
-      y->set_left(z->left());
-      y->left()->set_parent(y);
-      y->set_color(z->color());
+      y->left = z->left;
+      y->left->parent = y;
+      y->color = z->color;
     }
     if (y_original_color == BLACK) {
       _remove_fixup(x);
@@ -477,72 +428,72 @@ private:
 
   void _remove_fixup(node_ptr x) {
     node_ptr w;
-    while (x != _root && x->color() == BLACK) {
-      if (x == x->parent()->left()) {
-        w = x->parent()->right();
-        if (w->color() == RED) {
-          w->set_color(BLACK);
-          x->parent()->set_color(RED);
-          _left_rotate(x->parent());
-          w = x->parent()->right();
+    while (x != _root && x->color == BLACK) {
+      if (x == x->parent->left) {
+        w = x->parent->right;
+        if (w->color == RED) {
+          w->color = BLACK;
+          x->parent->color = RED;
+          _left_rotate(x->parent);
+          w = x->parent->right;
         }
-        if (w->left()->color() == BLACK && w->right()->color() == BLACK) {
-          w->set_color(RED);
-          x = x->parent();
-        } else if (w->right()->color() == BLACK) {
-          w->left()->set_color(BLACK);
-          w->set_color(RED);
+        if (w->left->color == BLACK && w->right->color == BLACK) {
+          w->color = RED;
+          x = x->parent;
+        } else if (w->right->color == BLACK) {
+          w->left->color = BLACK;
+          w->color = RED;
           _right_rotate(w);
-          w = x->parent()->right();
+          w = x->parent->right;
         }
-        w->set_color(x->parent()->color());
-        x->parent()->set_color(BLACK);
-        w->right()->set_color(BLACK);
-        _left_rotate(x->parent());
+        w->color = x->parent->color;
+        x->parent->color = BLACK;
+        w->right->color = BLACK;
+        _left_rotate(x->parent);
         x = _root;
       } else {
-        w = x->parent()->left();
-        if (w->color() == RED) {
-          w->set_color(BLACK);
-          x->parent()->set_color(RED);
-          _right_rotate(x->parent());
-          w = x->parent()->left();
+        w = x->parent->left;
+        if (w->color == RED) {
+          w->color = BLACK;
+          x->parent->color = RED;
+          _right_rotate(x->parent);
+          w = x->parent->left;
         }
-        if (w->right()->color() == BLACK && w->left()->color() == BLACK) {
-          w->set_color(RED);
-          x = x->parent();
-        } else if (w->left()->color() == BLACK) {
-          w->right()->set_color(BLACK);
-          w->set_color(RED);
+        if (w->right->color == BLACK && w->left->color == BLACK) {
+          w->color = RED;
+          x = x->parent;
+        } else if (w->left->color == BLACK) {
+          w->right->color = BLACK;
+          w->color = RED;
           _left_rotate(w);
-          w = x->parent()->left();
+          w = x->parent->left;
         }
-        w->set_color(x->parent()->color());
-        x->parent()->set_color(BLACK);
-        w->left()->set_color(BLACK);
-        _right_rotate(x->parent());
+        w->color = x->parent->color;
+        x->parent->color = BLACK;
+        w->left->color = BLACK;
+        _right_rotate(x->parent);
         x = _root;
       }
     }
-    x->set_color(BLACK);
+    x->color = BLACK;
   }
 
   node_ptr _minimum(node_ptr z) const {
-    while (z->left() != _nil) {
-      z = z->left();
+    while (z->left != _nil) {
+      z = z->left;
     }
     return z;
   }
 
   void _transplant(node_ptr u, node_ptr v) {
-    if (u->parent() == _nil) {
+    if (u->parent == _nil) {
       _root = v;
-    } else if (u == u->parent()->left()) {
-      u->parent()->set_left(v);
+    } else if (u == u->parent->left) {
+      u->parent->left = v;
     } else {
-      u->parent()->set_right(v);
+      u->parent->right = v;
     }
-    v->set_parent(u->parent());
+    v->parent = u->parent;
   }
 
   void _insert(node_ptr z) {
@@ -551,88 +502,88 @@ private:
     while (x != _nil) {
       y = x;
       if (_comp(z->value(), x->value()))
-        x = x->left();
+        x = x->left;
       else
-        x = x->right();
+        x = x->right;
     }
-    z->set_parent(y);
+    z->parent = y;
     if (y == _nil)
       _root = z;
     else if (_comp(z->value(), y->value()))
-      y->set_left(z);
+      y->left = z;
     else
-      y->set_right(z);
+      y->right = z;
   }
 
   void _insert_fixup(node_ptr z) {
-    while (z->parent()->color() == RED) {
-      if (z->parent() == z->parent()->parent()->left()) {
-        node_ptr y = z->parent()->parent()->right();
-        if (y->color() == RED) {
-          z->parent()->set_color(BLACK);
-          y->set_color(BLACK);
-          z->parent()->parent()->set_color(RED);
-          z = z->parent()->parent();
+    while (z->parent->color == RED) {
+      if (z->parent == z->parent->parent->left) {
+        node_ptr y = z->parent->parent->right;
+        if (y->color == RED) {
+          z->parent->color = BLACK;
+          y->color = BLACK;
+          z->parent->parent->color = RED;
+          z = z->parent->parent;
         } else {
-          if (z == z->parent()->right()) {
-            z = z->parent();
+          if (z == z->parent->right) {
+            z = z->parent;
             _left_rotate(z);
           }
-          z->parent()->set_color(BLACK);
-          z->parent()->parent()->set_color(RED);
-          _right_rotate(z->parent()->parent());
+          z->parent->color = BLACK;
+          z->parent->parent->color = RED;
+          _right_rotate(z->parent->parent);
         }
       } else {
-        node_ptr y = z->parent()->parent()->left();
-        if (y->color() == RED) {
-          z->parent()->set_color(BLACK);
-          y->set_color(BLACK);
-          z->parent()->parent()->set_color(RED);
-          z = z->parent()->parent();
+        node_ptr y = z->parent->parent->left;
+        if (y->color == RED) {
+          z->parent->color = BLACK;
+          y->color = BLACK;
+          z->parent->parent->color = RED;
+          z = z->parent->parent;
         } else {
-          if (z == z->parent()->left()) {
-            z = z->parent();
+          if (z == z->parent->left) {
+            z = z->parent;
             _right_rotate(z);
           }
-          z->parent()->set_color(BLACK);
-          z->parent()->parent()->set_color(RED);
-          _left_rotate(z->parent()->parent());
+          z->parent->color = BLACK;
+          z->parent->parent->color = RED;
+          _left_rotate(z->parent->parent);
         }
       }
     }
-    _root->set_color(BLACK);
+    _root->color = BLACK;
   }
 
   void _left_rotate(node_ptr x) {
-    node_ptr y = x->right();
-    x->set_right(y->left());
-    if (y->left() != _nil)
-      y->left()->set_parent(x);
-    y->set_parent(x->parent());
-    if (x->parent() == _nil)
+    node_ptr y = x->right;
+    x->right = y->left;
+    if (y->left != _nil)
+      y->left->parent = x;
+    y->parent = x->parent;
+    if (x->parent == _nil)
       _root = y;
-    else if (x == x->parent()->left())
-      x->parent()->set_left(y);
+    else if (x == x->parent->left)
+      x->parent->left = y;
     else
-      x->parent()->set_right(y);
-    y->set_left(x);
-    x->set_parent(y);
+      x->parent->right = y;
+    y->left = x;
+    x->parent = y;
   }
 
   void _right_rotate(node_ptr x) {
-    node_ptr y = x->left();
-    x->set_left(y->right());
-    if (y->right() != _nil)
-      y->right()->set_parent(x);
-    y->set_parent(x->parent());
-    if (x->parent() == _nil)
+    node_ptr y = x->left;
+    x->left = y->right;
+    if (y->right != _nil)
+      y->right->parent = x;
+    y->parent = x->parent;
+    if (x->parent == _nil)
       _root = y;
-    else if (x == x->parent()->right())
-      x->parent()->set_right(y);
+    else if (x == x->parent->right)
+      x->parent->right = y;
     else
-      x->parent()->set_left(y);
-    y->set_right(x);
-    x->set_parent(y);
+      x->parent->left = y;
+    y->right = x;
+    x->parent = y;
   }
 };
 
