@@ -135,4 +135,26 @@ TEST_F(TestTree, TestFind) {
 TEST_F(TestTree, TestRemove) {
   tree.remove(13);
   EXPECT_EQ(tree.get_root()->value(), 15);
+  EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);
+  EXPECT_EQ(tree.get_root()->right->value(), 25);
+  EXPECT_EQ(tree.get_root()->right->color, ft::color::RED);
+  EXPECT_EQ(tree.get_root()->right->left->value(), 17);
+  EXPECT_EQ(tree.get_root()->right->left->color, ft::color::BLACK);
+
+  tree.remove(11);
+  EXPECT_EQ(tree.get_root()->left->value(), 6);
+  EXPECT_EQ(tree.get_root()->left->left->value(), 1);
+  EXPECT_EQ(tree.get_root()->left->left->left, tree.get_nil());
+  EXPECT_EQ(tree.get_root()->left->left->right, tree.get_nil());
+  EXPECT_EQ(tree.get_root()->left->right->value(), 8);
+  EXPECT_EQ(tree.get_root()->left->right->left, tree.get_nil());
+  EXPECT_EQ(tree.get_root()->left->right->right, tree.get_nil());
+
+  tree.remove(17);
+  EXPECT_EQ(tree.get_root()->right->value(), 25);
+  EXPECT_EQ(tree.get_root()->right->color, ft::color::RED);
+  EXPECT_EQ(tree.get_root()->right->left->value(), 22);
+  EXPECT_EQ(tree.get_root()->right->left->color, ft::color::BLACK);
+  EXPECT_EQ(tree.get_root()->right->right->value(), 27);
+  EXPECT_EQ(tree.get_root()->right->right->color, ft::color::BLACK);
 }

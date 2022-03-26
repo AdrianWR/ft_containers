@@ -22,62 +22,61 @@ public:
   typedef const T *const_pointer;
   typedef const T &const_reference;
   typedef Node<T> *node_ptr;
-  typedef Node<T> &node_ref;
-  typedef const Node<T> *const_node_ptr;
-  typedef const Node<T> &const_node_ref;
   typedef Alloc allocator_type;
+  typedef enum color color_type;
 
   // Properties
   node_ptr parent;
   node_ptr left;
   node_ptr right;
-  enum color color;
-  pointer _value_ptr;
+  color_type color;
+
+private:
+  pointer _data;
   allocator_type _alloc;
 
 public:
   // Default Constructor
-  explicit Node(enum color color = RED, node_ptr parent = _nullptr,
+  explicit Node(color_type color = RED, node_ptr parent = _nullptr,
                 node_ptr left = _nullptr, node_ptr right = _nullptr,
                 allocator_type alloc = allocator_type())
-      : _value_ptr(_nullptr), parent(parent), left(left), right(right),
-        color(color), _alloc(alloc) {}
+      : _data(_nullptr), parent(parent), left(left), right(right), color(color),
+        _alloc(alloc) {}
 
   // Value constructor
-  Node(value_type value, enum color color = RED, node_ptr parent = _nullptr,
+  Node(value_type v, color_type color = RED, node_ptr parent = _nullptr,
        node_ptr left = _nullptr, node_ptr right = _nullptr,
        allocator_type alloc = allocator_type())
-      : parent(parent), left(left), right(right), color(color) {
-    _value_ptr = _alloc.allocate(1);
-    _alloc.construct(_value_ptr, value);
+      : _alloc(alloc), _data(_alloc.allocate(1)), parent(parent), left(left),
+        right(right), color(color) {
+    _alloc.construct(_data, v);
   }
 
   // Copy constructor
-  Node(const Node &node)
-      : _value_ptr(_nullptr), parent(node.parent), left(node.left),
-        right(node.right), color(node.color), _alloc(node._alloc) {
-    if (node._value_ptr != _nullptr) {
-      _value_ptr = _alloc.allocate(1);
-      _alloc.construct(_value_ptr, *node._value_ptr);
+  Node(const Node &n)
+      : parent(n.parent), left(n.left), right(n.right), color(n.color),
+        _alloc(n._alloc), _data(_alloc.allocate(1)) {
+    if (n._data != _nullptr) {
+      _alloc.construct(_data, *n._data);
     }
   }
 
   // Copy assignment operator
   Node &operator=(const Node &node) {
     if (this != &node) {
-      if (node._value_ptr != _nullptr) {
-        if (_value_ptr != _nullptr) {
-          _alloc.destroy(_value_ptr);
-          _alloc.deallocate(_value_ptr, 1);
+      if (node._data != _nullptr) {
+        if (_data != _nullptr) {
+          _alloc.destroy(_data);
+          _alloc.deallocate(_data, 1);
         }
-        _value_ptr = _alloc.allocate(1);
-        _alloc.construct(_value_ptr, *node._value_ptr);
+        _data = _alloc.allocate(1);
+        _alloc.construct(_data, *node._data);
       } else {
-        if (_value_ptr != _nullptr) {
-          _alloc.destroy(_value_ptr);
-          _alloc.deallocate(_value_ptr, 1);
+        if (_data != _nullptr) {
+          _alloc.destroy(_data);
+          _alloc.deallocate(_data, 1);
         }
-        _value_ptr = _nullptr;
+        _data = _nullptr;
       }
       parent = node.parent;
       left = node.left;
@@ -89,44 +88,46 @@ public:
 
   // Default destructor
   virtual ~Node() {
-    if (_value_ptr != _nullptr) {
-      _alloc.destroy(_value_ptr);
-      _alloc.deallocate(_value_ptr, 1);
+    if (_data != _nullptr) {
+      _alloc.destroy(_data);
+      _alloc.deallocate(_data, 1);
     }
   }
 
   // Getters
+  reference value() { return *_data; }
 
-  reference value() { return *_value_ptr; }
-
-  const_reference value() const { return *_value_ptr; }
-
-  // Setters
-
-  void value(value_type value) {
-    if (_value_ptr == _nullptr) {
-      _value_ptr = _alloc.allocate(1);
-    } else {
-      _alloc.destroy(_value_ptr);
-    }
-    _alloc.construct(_value_ptr, value);
-  }
+  const_reference value() const { return *_data; }
 };
 
-template <class T> bool operator==(const Node<T> &lhs, const Node<T> &rhs) {
-  return lhs.value == rhs.value;
+template <class T>
+inline bool operator==(const Node<T> &lhs, const Node<T> &rhs) {
+  return lhs.value() == rhs.value();
 }
 
-template <class T> bool operator!=(const Node<T> &lhs, const Node<T> &rhs) {
+template <class T>
+inline bool operator!=(const Node<T> &lhs, const Node<T> &rhs) {
   return !(lhs == rhs);
 }
 
-template <class T> bool operator<(const Node<T> &lhs, const Node<T> &rhs) {
-  return lhs.get_value() < rhs.get_value();
+template <class T>
+inline bool operator<(const Node<T> &lhs, const Node<T> &rhs) {
+  return lhs.value() < rhs.value();
 }
 
-template <class T> bool operator>(const Node<T> &lhs, const Node<T> &rhs) {
-  return lhs.get_value() > rhs.get_value();
+template <class T>
+inline bool operator>(const Node<T> &lhs, const Node<T> &rhs) {
+  return rhs < lhs;
+}
+
+template <class T>
+inline bool operator<=(const Node<T> &lhs, const Node<T> &rhs) {
+  return !(rhs < lhs);
+}
+
+template <class T>
+inline bool operator>=(const Node<T> &lhs, const Node<T> &rhs) {
+  return !(lhs < rhs);
 }
 
 template <class T>
