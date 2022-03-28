@@ -94,9 +94,10 @@ public:
   }
 
   // Getters
-  reference value() { return *_data; }
 
-  const_reference value() const { return *_data; }
+  reference data() { return *_data; }
+
+  const_reference data() const { return *_data; }
 };
 
 template <class T>
@@ -133,7 +134,7 @@ public:
     return *this;
   }
 
-  reference operator*() const { return _node->value(); }
+  reference operator*() const { return _node->data(); }
 
   pointer operator->() const { return &(operator*()); }
 
@@ -228,7 +229,7 @@ public:
     return *this;
   }
 
-  reference operator*() const { return _node->value(); }
+  reference operator*() const { return _node->data(); }
 
   pointer operator->() const { return &(operator*()); }
 
@@ -301,25 +302,23 @@ public:
 //   return !(it1 == it2);
 // }
 
-template <class T, class Compare = ft::less<T>, class Node = Node<T>,
-          class Alloc = std::allocator<T>,
-          class NodeAlloc = std::allocator<Node>>
+template <class Key, class T, class Compare = ft::less<Key>,
+          class Alloc = std::allocator<ft::pair<const Key, T>>>
 class RedBlackTree {
 public:
-  typedef T value_type;
+  typedef Key key_type;
+  typedef T mapped_type;
+  typedef ft::pair<const Key, T> value_type;
   typedef T *pointer;
   typedef T &reference;
   typedef const T *const_pointer;
   typedef const T &const_reference;
-  typedef Node node_type;
-  typedef Node *node_ptr;
-  typedef Node &node_ref;
-  typedef const Node *const_node_ptr;
-  typedef const Node &const_node_ref;
+  typedef Node<value_type> node_type;
+  typedef node_type *node_ptr;
+  typedef node_type &node_ref;
   typedef Alloc allocator_type;
-  typedef NodeAlloc node_allocator_type;
   typedef Compare key_compare;
-  typedef size_t size_type;
+  typedef std::size_t size_type;
   typedef ptrdiff_t difference_type;
   typedef TreeIterator<T> iterator;
   typedef TreeConstIterator<T> const_iterator;
@@ -331,45 +330,28 @@ private:
   node_ptr _nil;
   size_type _size;
   allocator_type _alloc;
-  node_allocator_type _node_alloc;
   key_compare _comp;
 
 public:
   // Default constructor
-  explicit RedBlackTree(
-      const node_allocator_type &node_alloc = node_allocator_type(),
-      const allocator_type &alloc = allocator_type())
-      : _node_alloc(node_alloc), _alloc(alloc), _size(0) {
-    _nil = _node_alloc.allocate(1);
-    _node_alloc.construct(_nil, node_type(BLACK));
+  explicit RedBlackTree(const allocator_type &alloc = allocator_type())
+      : _alloc(alloc), _size(0) {
+    _nil = _new_nil_node();
     _root = _nil;
-  }
-
-  // Value constructor
-  explicit RedBlackTree(
-      const value_type &value,
-      const node_allocator_type &node_alloc = node_allocator_type(),
-      const allocator_type &alloc = allocator_type())
-      : _node_alloc(node_alloc), _alloc(alloc), _size(1) {
-    _nil = _node_alloc.allocate(1);
-    _node_alloc.construct(_nil, node_type(BLACK));
-    _root = _node_alloc.allocate(1);
-    _node_alloc.construct(_root, node_type(value, BLACK, _nil, _alloc));
   }
 
   // Copy constructor
   RedBlackTree(const RedBlackTree &tree)
-      : _node_alloc(tree._node_alloc), _alloc(tree._alloc), _size(tree._size) {
-    _nil = _node_alloc.allocate(1);
-    _node_alloc.construct(_nil, node_type(BLACK));
+      : _alloc(tree._alloc), _comp(tree._comp), _size(tree._size) {
+    _nil = _new_nil_node();
     _root = _copy_tree(tree._root, tree._nil);
   }
 
   // Destructor
   virtual ~RedBlackTree() {
     clear();
-    _node_alloc.destroy(_nil);
-    _node_alloc.deallocate(_nil, 1);
+    _alloc.destroy(_nil);
+    _alloc.deallocate(_nil, 1);
   }
 
   // Copy assignment operator
@@ -394,65 +376,66 @@ public:
 
   size_type size() const { return _size; }
 
+  size_type max_size() const { return size_type(-1); }
+
   // Iterators
 
   iterator begin() { return iterator(_minimum(_root), _nil); }
 
   iterator end() { return iterator(_nil, _nil); }
 
-  const_iterator cbegin() const {
-    return const_iterator(_minimum(_root), _nil);
-  }
+  const_iterator begin() const { return const_iterator(_minimum(_root), _nil); }
 
-  const_iterator cend() const { return const_iterator(_nil, _nil); }
+  const_iterator end() const { return const_iterator(_nil, _nil); }
 
   reverse_iterator rbegin() { return reverse_iterator(end()); }
 
   reverse_iterator rend() { return reverse_iterator(begin()); }
 
-  const_reverse_iterator crbegin() const {
-    return const_reverse_iterator(cend());
+  const_reverse_iterator rbegin() const {
+    return const_reverse_iterator(end());
   }
 
-  const_reverse_iterator crend() const {
-    return const_reverse_iterator(cbegin());
+  const_reverse_iterator rend() const {
+    return const_reverse_iterator(begin());
   }
 
   // Tree operations
 
-  void insert(const value_type &value) {
-    if (_find(value) != _nil)
-      return;
-    node_ptr z = _node_alloc.allocate(1);
-    if (_root == _nil) {
-      _node_alloc.construct(z, node_type(value, BLACK, _nil, _alloc));
-      _root = z;
-    } else {
-      _node_alloc.construct(z, node_type(value, RED, _nil, _alloc));
-      _insert(z);
-      _insert_fixup(z);
-    }
-    _size++;
+  /* @brief Inserts a new node with the given key and mapped value.
+   *
+   * @param value_type A pair of the key and the mapped value.
+   * @return An iterator to the inserted node.
+   *
+   * Inserts a new node with the given key and value.
+   * If the key already exists, the value is not updated.
+   * For optimization, the non-existence of the key should be checked
+   * on the caller function.
+   */
+  iterator insert_unique(const value_type &val) {
+    node_ptr z = _new_node(val);
+    _insert(z);
+    _insert_fixup(z);
+    ++_size;
+    return iterator(z, _nil);
+  }
+
+  iterator insert_unique(iterator hint, const value_type &val) {
+    node_ptr z = _new_node(val);
+    _insert(z, hint._node);
+    _insert_fixup(z);
+    ++_size;
+    return iterator(z, _nil);
   }
 
   void remove(const value_type &value) {
     node_ptr node = _find(value);
     if (node != _nil) {
       _remove(node);
-      _node_alloc.destroy(node);
-      _node_alloc.deallocate(node, 1);
+      _alloc.destroy(node);
+      _alloc.deallocate(node, 1);
       _size--;
     }
-  }
-
-  iterator find(const value_type &value) {
-    node_ptr node = _find(value);
-    return iterator(node, _nil);
-  }
-
-  const_iterator find(const value_type &value) const {
-    node_ptr node = _find(value);
-    return const_iterator(node, _nil);
   }
 
   void clear() {
@@ -464,24 +447,41 @@ public:
 private:
   // Private methods
 
+  key_type _key(node_ptr node) { return node->data().first; }
+
+  node_ptr _new_node(const value_type &value,
+                     const typename node_type::color_type color = RED) {
+    node_ptr z = _alloc.allocate(1);
+    _alloc.construct(z, node_type(value, color, _nil, _alloc));
+    return z;
+  }
+
+  node_ptr _new_nil_node() {
+    node_ptr tmp = _alloc.allocate(1);
+    _alloc.construct(tmp, node_type(BLACK));
+    return tmp;
+  }
+
   /* @brief Find the node with the given value
    * @param value The value to find
    * @return The node with the given value. If the value is not found,
    * return the nil node
    */
-  node_ptr _find(const value_type &value) const {
-    node_ptr node = _root;
+  node_ptr _find(const key_type &k) const {
+    node_ptr node;
+
+    node = _root;
     while (node != _nil) {
-      if (node->value() == value) {
+      if (_comp(k, _key(node) && _comp(_key(node), k)))
         return node;
-      } else if (value < node->value()) {
+      else if (_comp(k, _key(node)))
         node = node->left;
-      } else {
+      else
         node = node->right;
-      }
     }
     return _nil;
   }
+
   /* @brief Get the node with the minimum value in the subtree rooted at node.
    * @param node The root of the subtree.
    * @return The node with the minimum value in the subtree rooted at node.
@@ -503,6 +503,7 @@ private:
     }
     return node;
   }
+
   /* @brief: Deep copy tree
    *
    * @param:
@@ -515,8 +516,8 @@ private:
   node_ptr _copy_tree(const node_ptr &node, const node_ptr &tree_copy_nil) {
     if (node == tree_copy_nil)
       return _nil;
-    node_ptr new_node = _node_alloc.allocate(1);
-    _node_alloc.construct(new_node, node->value(), node->color, _nil, _alloc);
+    node_ptr new_node = _alloc.allocate(1);
+    _alloc.construct(new_node, node->data(), node->color, _nil, _alloc);
     new_node->left = _copy_tree(node->left, tree_copy_nil);
     new_node->right = _copy_tree(node->right, tree_copy_nil);
     new_node->parent = _nil;
@@ -538,8 +539,8 @@ private:
     if (node != _nil) {
       _destroy_tree(node->left);
       _destroy_tree(node->right);
-      _node_alloc.destroy(node);
-      _node_alloc.deallocate(node, 1);
+      _alloc.destroy(node);
+      _alloc.deallocate(node, 1);
     }
   }
 
@@ -675,7 +676,7 @@ private:
     node_ptr x = _root;
     while (x != _nil) {
       y = x;
-      if (_comp(z->value(), x->value()))
+      if (_comp(_key(z), _key(x)))
         x = x->left;
       else
         x = x->right;
@@ -683,7 +684,7 @@ private:
     z->parent = y;
     if (y == _nil)
       _root = z;
-    else if (_comp(z->value(), y->value()))
+    else if (_comp(_key(z), _key(y)))
       y->left = z;
     else
       y->right = z;
@@ -740,8 +741,9 @@ private:
    *
    * Executes a left rotation on the node x.
    * The rotation is performed such that the node x becomes the left child of
-   * its right child. The right child is returned as the result of the rotation.
-   * The rotation is performed in-place. The color of x is preserved.
+   * its right child. The right child is returned as the result of the
+   * rotation. The rotation is performed in-place. The color of x is
+   * preserved.
    */
   void _left_rotate(node_ptr x) {
     node_ptr y = x->right;
@@ -785,14 +787,16 @@ private:
   }
 };
 
-template <typename T>
-inline bool operator==(const RedBlackTree<T> &lhs, const RedBlackTree<T> &rhs) {
+template <class Key, class T>
+inline bool operator==(const RedBlackTree<Key, T> &lhs,
+                       const RedBlackTree<Key, T> &rhs) {
   return lhs.size() == rhs.size() &&
          std::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
-template <typename T>
-inline bool operator!=(const RedBlackTree<T> &lhs, const RedBlackTree<T> &rhs) {
+template <class Key, class T>
+inline bool operator!=(const RedBlackTree<Key, T> &lhs,
+                       const RedBlackTree<Key, T> &rhs) {
   return !(lhs == rhs);
 }
 

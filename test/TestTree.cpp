@@ -8,19 +8,19 @@
 
 class TestTree : public ::testing::Test {
 public:
-  ft::RedBlackTree<int> tree;
+  ft::RedBlackTree<int, int> tree;
 
-  void SetUp() override {
-    tree.insert(13);
-    tree.insert(17);
-    tree.insert(8);
-    tree.insert(11);
-    tree.insert(15);
-    tree.insert(22);
-    tree.insert(1);
-    tree.insert(25);
-    tree.insert(6);
-    tree.insert(27);
+  void SetUp() {
+    tree.insert(13, 13);
+    tree.insert(17, 17);
+    tree.insert(8, 8);
+    tree.insert(11, 11);
+    tree.insert(15, 15);
+    tree.insert(22, 22);
+    tree.insert(1, 1);
+    tree.insert(25, 25);
+    tree.insert(6, 6);
+    tree.insert(27, 27);
   }
 };
 
@@ -31,13 +31,11 @@ TEST(TestNode, TestNodeConstructor) {
   EXPECT_EQ(node_zero.right, ft::_nullptr);
 
   ft::Node<int> node(1, ft::color::RED, ft::_nullptr);
-  EXPECT_EQ(node.value(), 1);
   EXPECT_EQ(node.left, ft::_nullptr);
   EXPECT_EQ(node.right, ft::_nullptr);
   EXPECT_EQ(node.parent, ft::_nullptr);
 
   ft::Node<int> node3(node);
-  EXPECT_EQ(node3.value(), 1);
   EXPECT_EQ(node3.parent, ft::_nullptr);
   EXPECT_EQ(node3.left, ft::_nullptr);
   EXPECT_EQ(node3.right, ft::_nullptr);
@@ -45,7 +43,6 @@ TEST(TestNode, TestNodeConstructor) {
 
   ft::Node<int> node5;
   node5 = node;
-  EXPECT_EQ(node5.value(), 1);
   EXPECT_EQ(node5.parent, ft::_nullptr);
   EXPECT_EQ(node5.left, ft::_nullptr);
   EXPECT_EQ(node5.right, ft::_nullptr);
@@ -53,21 +50,12 @@ TEST(TestNode, TestNodeConstructor) {
 }
 
 TEST(TestTreeConstructor, TestTreeDefaultConstructor) {
-  ft::RedBlackTree<int> tree;
-  EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);
-}
-
-TEST(TestTreeConstructor, TestTreeValueConstructor) {
-  ft::RedBlackTree<int> tree(42);
-  EXPECT_EQ(tree.get_root()->value(), 42);
-  EXPECT_EQ(tree.get_root()->parent, tree.get_nil());
-  EXPECT_EQ(tree.get_root()->left, tree.get_nil());
-  EXPECT_EQ(tree.get_root()->right, tree.get_nil());
+  ft::RedBlackTree<int, int> tree;
   EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);
 }
 
 TEST_F(TestTree, TestTreeCopyConstructor) {
-  ft::RedBlackTree<int> tree_copy(tree);
+  ft::RedBlackTree<int, int> tree_copy(tree);
   EXPECT_TRUE(tree_copy == tree);
 }
 
@@ -138,7 +126,7 @@ TEST_F(TestTree, TestSize) {
 
 TEST_F(TestTree, TestEmpty) {
   EXPECT_FALSE(tree.empty());
-  ft::RedBlackTree<int> tree2;
+  ft::RedBlackTree<int, int> tree2;
   EXPECT_TRUE(tree2.empty());
 }
 
