@@ -30,52 +30,50 @@ public:
   node_ptr left;
   node_ptr right;
   color_type color;
-
-private:
-  pointer _data;
-  allocator_type _alloc;
+  pointer data;
+  allocator_type alloc;
 
 public:
   // Default Constructor
   explicit Node(color_type color = RED, node_ptr parent = _nullptr,
                 node_ptr left = _nullptr, node_ptr right = _nullptr,
                 allocator_type alloc = allocator_type())
-      : _data(_nullptr), parent(parent), left(left), right(right), color(color),
-        _alloc(alloc) {}
+      : data(_nullptr), parent(parent), left(left), right(right), color(color),
+        alloc(alloc) {}
 
   // Value constructor
   Node(value_type v, color_type color, node_ptr nil,
        allocator_type alloc = allocator_type())
-      : _alloc(alloc), parent(nil), left(nil), right(nil), color(color) {
-    _data = _alloc.allocate(1);
-    _alloc.construct(_data, v);
+      : alloc(alloc), parent(nil), left(nil), right(nil), color(color) {
+    data = alloc.allocate(1);
+    alloc.construct(data, v);
   }
 
   // Copy constructor
   Node(const Node &n)
       : parent(n.parent), left(n.left), right(n.right), color(n.color),
-        _alloc(n._alloc), _data(_alloc.allocate(1)) {
-    if (n._data != _nullptr) {
-      _alloc.construct(_data, *n._data);
+        alloc(n.alloc), data(alloc.allocate(1)) {
+    if (n.data != _nullptr) {
+      alloc.construct(data, *n.data);
     }
   }
 
   // Copy assignment operator
   Node &operator=(const Node &node) {
     if (this != &node) {
-      if (node._data != _nullptr) {
-        if (_data != _nullptr) {
-          _alloc.destroy(_data);
-          _alloc.deallocate(_data, 1);
+      if (node.data != _nullptr) {
+        if (data != _nullptr) {
+          alloc.destroy(data);
+          alloc.deallocate(data, 1);
         }
-        _data = _alloc.allocate(1);
-        _alloc.construct(_data, *node._data);
+        data = alloc.allocate(1);
+        alloc.construct(data, *node.data);
       } else {
-        if (_data != _nullptr) {
-          _alloc.destroy(_data);
-          _alloc.deallocate(_data, 1);
+        if (data != _nullptr) {
+          alloc.destroy(data);
+          alloc.deallocate(data, 1);
         }
-        _data = _nullptr;
+        data = _nullptr;
       }
       parent = node.parent;
       left = node.left;
@@ -87,17 +85,17 @@ public:
 
   // Default destructor
   virtual ~Node() {
-    if (_data != _nullptr) {
-      _alloc.destroy(_data);
-      _alloc.deallocate(_data, 1);
+    if (data != _nullptr) {
+      alloc.destroy(data);
+      alloc.deallocate(data, 1);
     }
   }
 
   // Getters
 
-  reference data() { return *_data; }
+  // reference data() { return *data; }
 
-  const_reference data() const { return *_data; }
+  // const_reference data() const { return *data; }
 };
 
 template <class T>
@@ -121,8 +119,7 @@ private:
 public:
   TreeIterator() : _node(), _leaf() {}
 
-  TreeIterator(node_ptr node, node_ptr leaf = _nullptr)
-      : _node(node), _leaf(leaf) {}
+  TreeIterator(node_ptr node, node_ptr leaf) : _node(node), _leaf(leaf) {}
 
   TreeIterator(const TreeIterator<T> &it) : _node(it._node), _leaf(it._leaf) {}
 
@@ -134,7 +131,7 @@ public:
     return *this;
   }
 
-  reference operator*() const { return _node->data(); }
+  reference operator*() const { return *_node->data; }
 
   pointer operator->() const { return &(operator*()); }
 
@@ -229,7 +226,7 @@ public:
     return *this;
   }
 
-  reference operator*() const { return _node->data(); }
+  reference operator*() const { return *_node->data; }
 
   pointer operator->() const { return &(operator*()); }
 
@@ -311,38 +308,43 @@ public:
   typedef ft::pair<const Key, T> value_type;
   typedef T *pointer;
   typedef T &reference;
-  typedef const T *const_pointer;
-  typedef const T &const_reference;
-  typedef Node<value_type> node_type;
-  typedef node_type *node_ptr;
-  typedef node_type &node_ref;
   typedef Alloc allocator_type;
   typedef Compare key_compare;
+  typedef const T *const_pointer;
+  typedef const T &const_reference;
+  typedef Node<value_type, allocator_type> node_type;
+  typedef node_type *node_ptr;
+  typedef node_type &node_ref;
   typedef std::size_t size_type;
   typedef ptrdiff_t difference_type;
-  typedef TreeIterator<T> iterator;
-  typedef TreeConstIterator<T> const_iterator;
+  typedef TreeIterator<value_type> iterator;
+  typedef TreeConstIterator<value_type> const_iterator;
   typedef ft::reverse_iterator<iterator> reverse_iterator;
   typedef ft::reverse_iterator<const_iterator> const_reverse_iterator;
+  typedef std::allocator<node_type> node_allocator_type;
 
 private:
   node_ptr _root;
   node_ptr _nil;
   size_type _size;
   allocator_type _alloc;
+  node_allocator_type _node_alloc;
   key_compare _comp;
 
 public:
   // Default constructor
   explicit RedBlackTree(const allocator_type &alloc = allocator_type())
-      : _alloc(alloc), _size(0) {
+      : _node_alloc(node_allocator_type()), _alloc(alloc), _comp(key_compare()),
+        _size(0) {
     _nil = _new_nil_node();
     _root = _nil;
   }
 
   // Copy constructor
   RedBlackTree(const RedBlackTree &tree)
-      : _alloc(tree._alloc), _comp(tree._comp), _size(tree._size) {
+      : _node_alloc(node_allocator_type(tree._node_alloc)),
+        _alloc(allocator_type(tree._alloc)), _comp(tree._comp),
+        _size(tree._size) {
     _nil = _new_nil_node();
     _root = _copy_tree(tree._root, tree._nil);
   }
@@ -350,8 +352,8 @@ public:
   // Destructor
   virtual ~RedBlackTree() {
     clear();
-    _alloc.destroy(_nil);
-    _alloc.deallocate(_nil, 1);
+    _node_alloc.destroy(_nil);
+    _node_alloc.deallocate(_nil, 1);
   }
 
   // Copy assignment operator
@@ -428,12 +430,12 @@ public:
     return iterator(z, _nil);
   }
 
-  void remove(const value_type &value) {
-    node_ptr node = _find(value);
+  void remove(const key_type &k) {
+    node_ptr node = _find(k);
     if (node != _nil) {
       _remove(node);
-      _alloc.destroy(node);
-      _alloc.deallocate(node, 1);
+      _node_alloc.destroy(node);
+      _node_alloc.deallocate(node, 1);
       _size--;
     }
   }
@@ -447,18 +449,18 @@ public:
 private:
   // Private methods
 
-  key_type _key(node_ptr node) { return node->data().first; }
+  const key_type _key(node_ptr node) const { return node->data->first; }
 
   node_ptr _new_node(const value_type &value,
                      const typename node_type::color_type color = RED) {
-    node_ptr z = _alloc.allocate(1);
-    _alloc.construct(z, node_type(value, color, _nil, _alloc));
+    node_ptr z = _node_alloc.allocate(1);
+    _node_alloc.construct(z, node_type(value, color, _nil, _alloc));
     return z;
   }
 
   node_ptr _new_nil_node() {
-    node_ptr tmp = _alloc.allocate(1);
-    _alloc.construct(tmp, node_type(BLACK));
+    node_ptr tmp = _node_alloc.allocate(1);
+    _node_alloc.construct(tmp, node_type(BLACK));
     return tmp;
   }
 
@@ -472,7 +474,7 @@ private:
 
     node = _root;
     while (node != _nil) {
-      if (_comp(k, _key(node) && _comp(_key(node), k)))
+      if (!(_comp(k, _key(node)) || _comp(_key(node), k)))
         return node;
       else if (_comp(k, _key(node)))
         node = node->left;
@@ -504,7 +506,8 @@ private:
     return node;
   }
 
-  /* @brief: Deep copy tree
+  /*
+   * @brief: Deep copy tree
    *
    * @param:
    *  node: root of the tree to copy
@@ -516,8 +519,8 @@ private:
   node_ptr _copy_tree(const node_ptr &node, const node_ptr &tree_copy_nil) {
     if (node == tree_copy_nil)
       return _nil;
-    node_ptr new_node = _alloc.allocate(1);
-    _alloc.construct(new_node, node->data(), node->color, _nil, _alloc);
+    node_ptr new_node = _node_alloc.allocate(1);
+    _node_alloc.construct(new_node, *node);
     new_node->left = _copy_tree(node->left, tree_copy_nil);
     new_node->right = _copy_tree(node->right, tree_copy_nil);
     new_node->parent = _nil;
@@ -528,7 +531,8 @@ private:
     return new_node;
   }
 
-  /* @brief: Destroy tree
+  /*
+   * @brief: Destroy tree
    *
    * @param:
    *  node: root of the tree to destroy
@@ -539,8 +543,8 @@ private:
     if (node != _nil) {
       _destroy_tree(node->left);
       _destroy_tree(node->right);
-      _alloc.destroy(node);
-      _alloc.deallocate(node, 1);
+      _node_alloc.destroy(node);
+      _node_alloc.deallocate(node, 1);
     }
   }
 
