@@ -1,5 +1,8 @@
 # ft_containers
 
+[![build](https://github.com/AdrianWR/ft_containers/actions/workflows/cmake.yml/badge.svg)](https://github.com/AdrianWR/ft_containers/actions/workflows/cmake.yml)
+[![lint](https://github.com/AdrianWR/ft_containers/actions/workflows/lint.yml/badge.svg)](https://github.com/AdrianWR/ft_containers/actions/workflows/lint.yml)
+
 A custom implementation of some classic C++ containers
 
 ## Prerequisites
