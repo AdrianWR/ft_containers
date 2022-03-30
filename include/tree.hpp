@@ -112,44 +112,45 @@ public:
   typedef typename Node<T>::node_ptr node_ptr;
   typedef Node<T> *link_type;
 
+  node_ptr node;
+
 private:
-  node_ptr _node;
   node_ptr _leaf;
 
 public:
-  TreeIterator() : _node(), _leaf() {}
+  TreeIterator() : node(), _leaf() {}
 
-  TreeIterator(node_ptr node, node_ptr leaf) : _node(node), _leaf(leaf) {}
+  TreeIterator(node_ptr node, node_ptr leaf) : node(node), _leaf(leaf) {}
 
-  TreeIterator(const TreeIterator<T> &it) : _node(it._node), _leaf(it._leaf) {}
+  TreeIterator(const TreeIterator<T> &it) : node(it._node), _leaf(it._leaf) {}
 
   self &operator=(const TreeIterator<T> &it) {
     if (this != &it) {
-      _node = it._node;
+      node = it.node;
       _leaf = it._leaf;
     }
     return *this;
   }
 
-  reference operator*() const { return *_node->data; }
+  reference operator*() const { return *node->data; }
 
   pointer operator->() const { return &(operator*()); }
 
   self &operator++() {
     node_ptr y;
 
-    if (_node->right != _nullptr) {
-      _node = _node->right;
-      while (_node->left != _nullptr)
-        _node = _node->left;
+    if (node->right != _nullptr) {
+      node = node->right;
+      while (node->left != _nullptr)
+        node = node->left;
     } else {
-      y = _node->parent;
-      while (_node == y->right) {
-        _node = y;
+      y = node->parent;
+      while (node == y->right) {
+        node = y;
         y = y->parent;
       }
-      if (_node->right != y)
-        _node = y;
+      if (node->right != y)
+        node = y;
     }
     return *this;
   }
@@ -163,20 +164,20 @@ public:
   self &operator--() {
     node_ptr y;
 
-    if (_node->color == ft::color::RED && _node->parent->parent == _node) {
-      _node = _node->right;
-    } else if (_node->left != _nullptr) {
-      y = _node->left;
+    if (node->color == ft::color::RED && node->parent->parent == node) {
+      node = node->right;
+    } else if (node->left != _nullptr) {
+      y = node->left;
       while (y->right != _nullptr)
         y = y->right;
-      _node = y;
+      node = y;
     } else {
-      y = _node->parent;
-      while (_node == y->left) {
-        _node = y;
+      y = node->parent;
+      while (node == y->left) {
+        node = y;
         y = y->parent;
       }
-      _node = y;
+      node = y;
     }
     return *this;
   }
@@ -187,9 +188,9 @@ public:
     return tmp;
   }
 
-  bool operator==(const self &it) const { return _node == it._node; }
+  bool operator==(const self &it) const { return node == it._node; }
 
-  bool operator!=(const self &it) const { return _node != it._node; }
+  bool operator!=(const self &it) const { return node != it._node; }
 };
 
 template <class T> class TreeConstIterator {
@@ -382,11 +383,13 @@ public:
 
   // Iterators
 
-  iterator begin() { return iterator(_minimum(_root), _nil); }
+  iterator begin() { return empty() ? end() : iterator(_minimum(_root), _nil); }
 
   iterator end() { return iterator(_nil, _nil); }
 
-  const_iterator begin() const { return const_iterator(_minimum(_root), _nil); }
+  const_iterator begin() const {
+    return empty() ? end() : const_iterator(_minimum(_root), _nil);
+  }
 
   const_iterator end() const { return const_iterator(_nil, _nil); }
 
@@ -415,11 +418,25 @@ public:
    * on the caller function.
    */
   iterator insert_unique(const value_type &val) {
-    node_ptr z = _new_node(val);
+    typedef typename ft::pair<iterator, bool> result_type;
+    ft::pair<node_type, node_type> res = _get_insert_unique_pos(val.first);
+    if (res.second) {
+      node_ptr new_node = _new_node(val);
+      _insert_node(res.first, res.second, new_node);
+      ++_size;
+      return iterator(new_node, _nil);
+    } else {
+      return iterator(res.first, _nil);
+    }
+    ++_size;
+  }
+
+  ft::pair<iterator, bool> insert_unique(value_type &&val) {
+    node_ptr z = _new_node(std::move(val));
     _insert(z);
     _insert_fixup(z);
     ++_size;
-    return iterator(z, _nil);
+    return ft::pair<iterator, bool>(iterator(z, _nil), true);
   }
 
   iterator insert_unique(iterator hint, const value_type &val) {
@@ -444,6 +461,24 @@ public:
     _destroy_tree(_root);
     _root = _nil;
     _size = 0;
+  }
+
+  iterator lower_bound(const key_type &k) {
+    for (iterator it = begin(); it != end(); ++it) {
+      if (!_comp(k, it->first)) {
+        return it;
+      }
+    }
+    return end();
+  }
+
+  const_iterator lower_bound(const key_type &k) const {
+    for (const_iterator it = begin(); it != end(); ++it) {
+      if (!_comp(k, it->first)) {
+        return it;
+      }
+    }
+    return end();
   }
 
 private:
@@ -541,6 +576,7 @@ private:
    */
   void _destroy_tree(node_ptr node) {
     if (node != _nil) {
+      std::cout << "destroy node " << node->data->first << std::endl;
       _destroy_tree(node->left);
       _destroy_tree(node->right);
       _node_alloc.destroy(node);
@@ -675,16 +711,73 @@ private:
    *
    */
 
-  void _insert(node_ptr z) {
+  // void _insert(node_ptr z) {
+  //   node_ptr y = _nil;
+  //   node_ptr x = _root;
+  //   while (x != _nil) {
+  //     y = x;
+  //     if (_comp(_key(z), _key(x)))
+  //       x = x->left;
+  //     else
+  //       x = x->right;
+  //   }
+  //   z->parent = y;
+  //   if (y == _nil)
+  //     _root = z;
+  //   else if (_comp(_key(z), _key(y)))
+  //     y->left = z;
+  //   else
+  //     y->right = z;
+  // }
+  //
+
+  iterator _lower_bound_from_position(const key_type k, iterator position) {
+    if (position == end()) {
+      return end();
+    }
+    if (!_comp(k, position->first) && !_comp(position->first, k))
+      return end();
+    // else if (_comp(k, position->first))
+    //  return _lower_bound_from_position(k, begin());
+    else {
+      for (iterator it = position; it != end(); ++it) {
+        if (!_comp(k, it->first)) {
+          std::cout << "lower bound from position " << k << std::endl;
+          return it;
+        }
+      }
+      return begin();
+    }
+  }
+
+  ft::pair<node_type, node_type> _get_insert_unique_pos(const key_type &key) {
+    typedef ft::pair<node_type, node_type> pair_type;
+    node_ptr x = _minimum(_root);
     node_ptr y = _nil;
-    node_ptr x = _root;
+    bool comp = true;
     while (x != _nil) {
       y = x;
-      if (_comp(_key(z), _key(x)))
-        x = x->left;
-      else
-        x = x->right;
+      comp = _comp(key, x->first);
+      x = comp ? x->left : x->right;
     }
+    iterator j = iterator(y, _nil);
+    if (comp) {
+      if (j == begin())
+        return pair_type(x, y);
+      else
+        --j;
+    }
+    if (_comp(j->first, key))
+      return pair_type(x, y);
+    return pair_type(j.node, 0);
+  }
+
+  iterator _insert(node_ptr z) {
+    node_ptr y = _nil;
+    key_type k = z->data->first;
+    iterator position = _lower_bound_from_position(k, begin());
+    if (position != end())
+      y = _find(position->first);
     z->parent = y;
     if (y == _nil)
       _root = z;
@@ -692,6 +785,8 @@ private:
       y->left = z;
     else
       y->right = z;
+    std::cout << "inserted " << z->data->first << std::endl;
+    return iterator(z, _nil);
   }
 
   void _insert_fixup(node_ptr z) {
@@ -744,8 +839,8 @@ private:
    *   p   r                      l   q
    *
    * Executes a left rotation on the node x.
-   * The rotation is performed such that the node x becomes the left child of
-   * its right child. The right child is returned as the result of the
+   * The rotation is performed such that the node x becomes the left child
+   * of its right child. The right child is returned as the result of the
    * rotation. The rotation is performed in-place. The color of x is
    * preserved.
    */
@@ -770,9 +865,10 @@ private:
    * @param[in] x node to rotate
    *
    * Executes a right rotation on the node x.
-   * The rotation is performed such that the node x becomes the right child of
-   * its left child. The left child is returned as the result of the rotation.
-   * The rotation is performed in-place. The color of x is preserved.
+   * The rotation is performed such that the node x becomes the right
+   * child of its left child. The left child is returned as the result of
+   * the rotation. The rotation is performed in-place. The color of x is
+   * preserved.
    */
   void _right_rotate(node_ptr x) {
     node_ptr y = x->left;
