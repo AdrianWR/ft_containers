@@ -333,8 +333,9 @@ private:
 
 public:
   // Default constructor
-  explicit RedBlackTree(const allocator_type &alloc = allocator_type())
-      : _node_alloc(node_allocator_type()), _alloc(alloc), _comp(key_compare()),
+  explicit RedBlackTree(const key_compare &comp = key_compare(),
+                        const allocator_type &alloc = allocator_type())
+      : _node_alloc(node_allocator_type()), _alloc(alloc), _comp(comp),
         _size(0) {
     _nil = _new_nil_node();
     _root = _nil;
@@ -423,11 +424,8 @@ public:
   }
 
   iterator insert_unique(iterator hint, const value_type &val) {
-    node_ptr z = _new_node(val);
-    _insert(z, hint._node);
-    _insert_fixup(z);
-    ++_size;
-    return iterator(z, _nil);
+    (void)hint;
+    return insert_unique(val);
   }
 
   void remove(const key_type &k) {

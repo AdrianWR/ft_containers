@@ -50,7 +50,6 @@ public:
 
 private:
   _tree_type _tree;
-  key_compare _comp;
 
 public:
   // Member Functions
@@ -65,7 +64,7 @@ public:
    */
   explicit map(const key_compare &comp = key_compare(),
                const allocator_type &alloc = allocator_type())
-      : _tree(comp, alloc), _comp(comp){};
+      : _tree(comp, alloc){};
 
   /**
    * @brief Range Constructor
@@ -103,7 +102,7 @@ public:
    * The destructor destroys the container object. All of the elements in the
    * container are destroyed and all memory is deallocated.
    */
-  ~map() { ~_tree(); }
+  ~map() {}
 
   /**
    * @brief Copy Assignment Operator
