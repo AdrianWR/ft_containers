@@ -138,9 +138,13 @@ public:
   self &operator++() {
     node_ptr y;
 
-    if (_node->right != _nullptr) {
+    if (_node->right == _leaf) {
+      _node = _leaf->right;
+      return *this;
+    }
+    if (_node->right != _leaf) {
       _node = _node->right;
-      while (_node->left != _nullptr)
+      while (_node->left != _leaf)
         _node = _node->left;
     } else {
       y = _node->parent;
@@ -163,11 +167,15 @@ public:
   self &operator--() {
     node_ptr y;
 
+    if (_node == _leaf) {
+      _node = _leaf->right;
+      return *this;
+    }
     if (_node->color == ft::color::RED && _node->parent->parent == _node) {
       _node = _node->right;
-    } else if (_node->left != _nullptr) {
+    } else if (_node->left != _leaf) {
       y = _node->left;
-      while (y->right != _nullptr)
+      while (y->right != _leaf)
         y = y->right;
       _node = y;
     } else {
@@ -233,9 +241,9 @@ public:
   self &operator++() {
     node_ptr y;
 
-    if (_node->right != _nullptr) {
+    if (_node->right != _leaf) {
       _node = _node->right;
-      while (_node->left != _nullptr)
+      while (_node->left != _leaf)
         _node = _node->left;
     } else {
       y = _node->parent;
@@ -258,11 +266,15 @@ public:
   self &operator--() {
     node_ptr y;
 
+    if (_node == _leaf) {
+      _node = _leaf->right;
+      return *this;
+    }
     if (_node->color == ft::color::RED && _node->parent->parent == _node) {
       _node = _node->right;
-    } else if (_node->left != _nullptr) {
+    } else if (_node->left != _leaf) {
       y = _node->left;
-      while (y->right != _nullptr)
+      while (y->right != _leaf)
         y = y->right;
       _node = y;
     } else {
@@ -282,22 +294,22 @@ public:
     return tmp;
   }
 
-  bool operator==(const self &it) const { return operator*() == *it; }
+  bool operator==(const self &it) const { return _node == it._node; }
 
-  bool operator!=(const self &it) const { return operator*() != *it; }
+  bool operator!=(const self &it) const { return _node != it._node; }
 };
 
-// template <class T>
-// inline bool operator==(const TreeIterator<T> &it1,
-//                        const TreeConstIterator<T> &it2) {
-//   return *it1 == *it2;
-// }
-//
-// template <class T>
-// inline bool operator!=(const TreeIterator<T> &it1,
-//                        const TreeConstIterator<T> &it2) {
-//   return !(it1 == it2);
-// }
+template <class T>
+inline bool operator==(const TreeIterator<T> &it1,
+                       const TreeConstIterator<T> &it2) {
+  return *it1 == *it2;
+}
+
+template <class T>
+inline bool operator!=(const TreeIterator<T> &it1,
+                       const TreeConstIterator<T> &it2) {
+  return !(it1 == it2);
+}
 
 template <class Key, class T, class Compare = ft::less<Key>,
           class Alloc = std::allocator<ft::pair<const Key, T>>>
@@ -348,6 +360,7 @@ public:
         _size(tree._size) {
     _nil = _new_nil_node();
     _root = _copy_tree(tree._root, tree._nil);
+    _update_nil();
   }
 
   // Destructor
@@ -363,6 +376,7 @@ public:
       _destroy_tree(_root);
       _root = _copy_tree(tree._root, tree._nil);
       _size = tree._size;
+      _update_nil();
     }
     return *this;
   }
@@ -385,19 +399,19 @@ public:
 
   iterator begin() { return iterator(_minimum(_root), _nil); }
 
-  iterator end() { return iterator(_nil, _nil); }
-
   const_iterator begin() const { return const_iterator(_minimum(_root), _nil); }
+
+  iterator end() { return iterator(_nil, _nil); }
 
   const_iterator end() const { return const_iterator(_nil, _nil); }
 
   reverse_iterator rbegin() { return reverse_iterator(end()); }
 
-  reverse_iterator rend() { return reverse_iterator(begin()); }
-
   const_reverse_iterator rbegin() const {
     return const_reverse_iterator(end());
   }
+
+  reverse_iterator rend() { return reverse_iterator(begin()); }
 
   const_reverse_iterator rend() const {
     return const_reverse_iterator(begin());
@@ -415,17 +429,47 @@ public:
    * For optimization, the non-existence of the key should be checked
    * on the caller function.
    */
-  iterator insert_unique(const value_type &val) {
+  iterator _insert(const value_type &val) {
+    node_ptr y = _nil;
+    node_ptr x = _root;
+    while (x != _nil) {
+      y = x;
+      if (!_comp(val.first, _key(x)) && !_comp(_key(x), val.first)) {
+        return iterator(x, _nil);
+      } else if (_comp(val.first, _key(x)))
+        x = x->left;
+      else
+        x = x->right;
+    }
     node_ptr z = _new_node(val);
-    _insert(z);
+    z->parent = y;
+    if (y == _nil)
+      _root = z;
+    else if (_comp(_key(z), _key(y)))
+      y->left = z;
+    else
+      y->right = z;
     _insert_fixup(z);
     ++_size;
+    _update_nil();
     return iterator(z, _nil);
+  }
+
+  ft::pair<iterator, bool> insert_unique(const value_type &val) {
+    iterator it = _insert(val);
+    return ft::make_pair(it, it == end());
   }
 
   iterator insert_unique(iterator hint, const value_type &val) {
     (void)hint;
-    return insert_unique(val);
+    return _insert(val);
+  }
+
+  template <class InputIterator>
+  void insert_unique(InputIterator first, InputIterator last) {
+    for (; first != last; ++first) {
+      _insert(*first);
+    }
   }
 
   void remove(const key_type &k) {
@@ -436,6 +480,7 @@ public:
       _node_alloc.deallocate(node, 1);
       _size--;
     }
+    _update_nil();
   }
 
   void clear() {
@@ -459,7 +504,16 @@ private:
   node_ptr _new_nil_node() {
     node_ptr tmp = _node_alloc.allocate(1);
     _node_alloc.construct(tmp, node_type(BLACK));
+    tmp->parent = _root;
+    // tmp->left = _minimum(_root);
+    // tmp->right = _maximum(_root);
     return tmp;
+  }
+
+  void _update_nil() {
+    _nil->parent = _root;
+    _nil->left = _minimum(_root);
+    _nil->right = _maximum(_root);
   }
 
   /* @brief Find the node with the given value
@@ -541,9 +595,13 @@ private:
     if (node != _nil) {
       _destroy_tree(node->left);
       _destroy_tree(node->right);
-      _node_alloc.destroy(node);
-      _node_alloc.deallocate(node, 1);
+      _destroy_node(node);
     }
+  }
+
+  void _destroy_node(node_ptr node) {
+    _node_alloc.destroy(node);
+    _node_alloc.deallocate(node, 1);
   }
 
   /* @brief Removes the node z from the tree.
@@ -678,7 +736,10 @@ private:
     node_ptr x = _root;
     while (x != _nil) {
       y = x;
-      if (_comp(_key(z), _key(x)))
+      if (!_comp(_key(z), _key(x)) && !_comp(_key(x), _key(z))) {
+        _destroy_node(z);
+        return;
+      } else if (_comp(_key(z), _key(x)))
         x = x->left;
       else
         x = x->right;

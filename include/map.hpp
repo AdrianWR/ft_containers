@@ -32,8 +32,24 @@ public:
   typedef Compare key_compare;
   typedef Alloc allocator_type;
 
+  class value_compare : ft::binary_function<value_type, value_type, bool> {
+    friend class map<Key, T, Compare, Alloc>;
+
+  protected:
+    Compare comp;
+    value_compare(Compare c) : comp(c) {}
+
+  public:
+    typedef bool result_type;
+    typedef value_type first_argument_type;
+    typedef value_type second_argument_type;
+    bool operator()(const value_type &x, const value_type &y) const {
+      return comp(x.first, y.first);
+    }
+  };
+
 private:
-  typedef ft::RedBlackTree<Key, T, Compare, Alloc> _tree_type;
+  typedef RedBlackTree<Key, T, Compare, Alloc> _tree_type;
   typedef typename _tree_type::node_type _node_type;
 
 public:
@@ -46,7 +62,7 @@ public:
   typedef typename _tree_type::reverse_iterator reverse_iterator;
   typedef typename _tree_type::const_reverse_iterator const_reverse_iterator;
   typedef typename _tree_type::size_type size_type;
-  typedef typename _tree_type::difference_type difference_type;
+  typedef typename iterator_traits<iterator>::difference_type difference_type;
 
 private:
   _tree_type _tree;
@@ -161,6 +177,19 @@ public:
    */
   size_type max_size() const { return _tree.max_size(); }
 
+  // Element Access
+
+  /**
+   * @brief Returns a reference to the element with the specified key.
+   *
+   * @param key The key of the element to return.
+   *
+   * @return A reference to the element with the specified key.
+   */
+  mapped_type &operator[](const key_type &k) {
+    return (*((insert(make_pair(k, mapped_type()))).first)).second;
+  }
+
   // Modifiers
 
   /**
@@ -172,15 +201,7 @@ public:
    * insertion took place (true) or not (false).
    */
   ft::pair<iterator, bool> insert(const value_type &val) {
-    for (iterator it = begin(); it != end(); it++) {
-      if (!key_compare(it->first, val.first)) {
-        if (!key_compare(val.first, it->first)) {
-          return ft::pair<iterator, bool>(it, false);
-        } else {
-          return ft::pair<iterator, bool>(_tree.insert_unique(val), true);
-        }
-      }
-    }
+    return _tree.insert_unique(val);
   }
 
   /**

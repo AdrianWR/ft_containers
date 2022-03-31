@@ -220,6 +220,7 @@ TEST(TestVectorIterators, TestVectorRBegin) {
   ft::vector<int>::iterator it = v1.begin();
   ft::vector<int>::iterator eit = v1.end();
   ft::vector<int>::reverse_iterator rit = v1.rbegin();
+  ASSERT_EQ(*rit, 5);
   for (int i = 0; i < 5; ++i) {
     ASSERT_EQ(*rit, *(eit - 1 - i));
     ASSERT_EQ(*rit, *(it + 4 - i));
