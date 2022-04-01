@@ -94,7 +94,7 @@ public:
 
   reverse_iterator operator++(int) {
     reverse_iterator tmp = *this;
-    --(*this);
+    --_it;
     return tmp;
   }
 
@@ -114,7 +114,7 @@ public:
 
   reverse_iterator operator--(int) {
     reverse_iterator tmp = *this;
-    ++(*this);
+    ++_it;
     return tmp;
   }
 

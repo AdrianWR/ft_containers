@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <map>
 #include <memory>
 
 #include "nullptr.hpp"
@@ -81,11 +82,13 @@ TEST_F(TestTree, TestTreeInsert) {
   EXPECT_EQ(tree.get_root()->right->right->left->color, ft::color::RED);
   EXPECT_EQ(tree.get_root()->right->right->right->data->first, 27);
   EXPECT_EQ(tree.get_root()->right->right->right->color, ft::color::RED);
+  EXPECT_EQ(tree.get_root()->right->right->right->right, tree.get_nil());
+  EXPECT_EQ(tree.get_root()->right->right->right->left, tree.get_nil());
 }
 
 TEST_F(TestTree, TestRemove) {
   EXPECT_EQ(tree.get_root()->data->first, 13);
-  tree.remove(13);
+  tree.erase(13);
   EXPECT_EQ(tree.get_root()->data->first, 15);
   EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);
   EXPECT_EQ(tree.get_root()->right->data->first, 25);
@@ -94,7 +97,7 @@ TEST_F(TestTree, TestRemove) {
   EXPECT_EQ(tree.get_root()->right->left->color, ft::color::BLACK);
   EXPECT_EQ(tree.size(), 9);
 
-  tree.remove(11);
+  tree.erase(11);
   EXPECT_EQ(tree.get_root()->data->first, 15);
   EXPECT_EQ(tree.get_root()->left->data->first, 6);
   EXPECT_EQ(tree.get_root()->left->left->data->first, 1);
@@ -105,7 +108,7 @@ TEST_F(TestTree, TestRemove) {
   EXPECT_EQ(tree.get_root()->left->right->right, tree.get_nil());
   EXPECT_EQ(tree.size(), 8);
 
-  tree.remove(17);
+  tree.erase(17);
   EXPECT_EQ(tree.get_root()->right->data->first, 25);
   EXPECT_EQ(tree.get_root()->right->color, ft::color::RED);
   EXPECT_EQ(tree.get_root()->right->left->data->first, 22);
@@ -129,4 +132,107 @@ TEST_F(TestTree, TestEmpty) {
 TEST_F(TestTree, TestClear) {
   tree.clear();
   EXPECT_EQ(tree.get_root(), tree.get_nil());
+}
+
+TEST_F(TestTree, TestIterator) {
+  ft::RedBlackTree<int, int>::iterator it = tree.begin();
+  EXPECT_EQ(it->first, 1);
+  EXPECT_EQ(it->second, 1);
+  ++it;
+  EXPECT_EQ(it->first, 6);
+  EXPECT_EQ(it->second, 6);
+  ++it;
+  EXPECT_EQ(it->first, 8);
+  EXPECT_EQ(it->second, 8);
+  ++it;
+  EXPECT_EQ(it->first, 11);
+  EXPECT_EQ(it->second, 11);
+  ++it;
+  EXPECT_EQ(it->first, 13);
+  EXPECT_EQ(it->second, 13);
+  ++it;
+  EXPECT_EQ(it->first, 15);
+  EXPECT_EQ(it->second, 15);
+  ++it;
+  EXPECT_EQ(it->first, 17);
+  EXPECT_EQ(it->second, 17);
+  ++it;
+  EXPECT_EQ(it->first, 22);
+  EXPECT_EQ(it->second, 22);
+  ++it;
+  EXPECT_EQ(it->first, 25);
+  EXPECT_EQ(it->second, 25);
+  ++it;
+  EXPECT_EQ(it->first, 27);
+  EXPECT_EQ(it->second, 27);
+  ++it;
+  EXPECT_EQ(it, tree.end());
+
+  ft::RedBlackTree<int, int>::iterator it2 = tree.end();
+  --it2;
+  EXPECT_EQ(it2->first, 27);
+  EXPECT_EQ(it2->second, 27);
+  --it2;
+  EXPECT_EQ(it2->first, 25);
+  EXPECT_EQ(it2->second, 25);
+  --it2;
+  EXPECT_EQ(it2->first, 22);
+  EXPECT_EQ(it2->second, 22);
+  --it2;
+  EXPECT_EQ(it2->first, 17);
+  EXPECT_EQ(it2->second, 17);
+  --it2;
+  EXPECT_EQ(it2->first, 15);
+  EXPECT_EQ(it2->second, 15);
+  --it2;
+  EXPECT_EQ(it2->first, 13);
+  EXPECT_EQ(it2->second, 13);
+  --it2;
+  EXPECT_EQ(it2->first, 11);
+  EXPECT_EQ(it2->second, 11);
+  --it2;
+  EXPECT_EQ(it2->first, 8);
+  EXPECT_EQ(it2->second, 8);
+  --it2;
+  EXPECT_EQ(it2->first, 6);
+  EXPECT_EQ(it2->second, 6);
+  --it2;
+  EXPECT_EQ(it2->first, 1);
+  EXPECT_EQ(it2->second, 1);
+  EXPECT_EQ(it2, tree.begin());
+}
+
+TEST_F(TestTree, TestReverseIterator) {
+  ft::RedBlackTree<int, int>::reverse_iterator it = tree.rbegin();
+  EXPECT_EQ(it->first, 27);
+  EXPECT_EQ(it->second, 27);
+  it++;
+  EXPECT_EQ(it->first, 25);
+  EXPECT_EQ(it->second, 25);
+  it++;
+  EXPECT_EQ(it->first, 22);
+  EXPECT_EQ(it->second, 22);
+  it++;
+  EXPECT_EQ(it->first, 17);
+  EXPECT_EQ(it->second, 17);
+  it++;
+  EXPECT_EQ(it->first, 15);
+  EXPECT_EQ(it->second, 15);
+  it++;
+  EXPECT_EQ(it->first, 13);
+  EXPECT_EQ(it->second, 13);
+  it++;
+  EXPECT_EQ(it->first, 11);
+  EXPECT_EQ(it->second, 11);
+  it++;
+  EXPECT_EQ(it->first, 8);
+  EXPECT_EQ(it->second, 8);
+  it++;
+  EXPECT_EQ(it->first, 6);
+  EXPECT_EQ(it->second, 6);
+  it++;
+  EXPECT_EQ(it->first, 1);
+  EXPECT_EQ(it->second, 1);
+  it++;
+  EXPECT_EQ(it, tree.rend());
 }

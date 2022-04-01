@@ -228,6 +228,44 @@ public:
   template <class InputIterator>
   ft::pair<iterator, bool> insert(InputIterator first, InputIterator last) {}
 
+  /**
+   * @brief Erase an element by iterator
+   *
+   * @param pos The position of the element to be erased.
+   * @return An iterator to the element after the erased element.
+   */
+
+  iterator erase(iterator pos) { return _tree.erase(pos); }
+
+  /**
+   * @brief Erase an element by key
+   *
+   * @param key The key of the element to be erased.
+   * @return The number of elements erased.
+   */
+  size_type erase(const key_type &key) { return _tree.erase(key); }
+
+  /**
+   * @brief Erase a range of elements
+   *
+   * @param first The iterator to the first element in the range.
+   * @param last The iterator to the last element in the range.
+   * @return An iterator to the element after the last erased element.
+   */
+
+  iterator erase(iterator first, iterator last) {
+    return _tree.erase(first, last);
+  }
+
+  /**
+   * @brief Clear the container
+   *
+   * The clear() function removes all elements from the container (which
+   * effectively reduces the container to its default state). The container
+   * will be empty after this call returns.
+   */
+  void clear() { _tree.clear(); }
+
   // Operations
 
   /**

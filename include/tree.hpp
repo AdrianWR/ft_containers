@@ -138,10 +138,6 @@ public:
   self &operator++() {
     node_ptr y;
 
-    if (_node->right == _leaf) {
-      _node = _leaf->right;
-      return *this;
-    }
     if (_node->right != _leaf) {
       _node = _node->right;
       while (_node->left != _leaf)
@@ -213,8 +209,9 @@ public:
   typedef typename Node<T>::node_ptr node_ptr;
   typedef Node<T> *link_type;
 
-private:
   node_ptr _node;
+
+private:
   node_ptr _leaf;
 
 public:
@@ -419,42 +416,6 @@ public:
 
   // Tree operations
 
-  /* @brief Inserts a new node with the given key and mapped value.
-   *
-   * @param value_type A pair of the key and the mapped value.
-   * @return An iterator to the inserted node.
-   *
-   * Inserts a new node with the given key and value.
-   * If the key already exists, the value is not updated.
-   * For optimization, the non-existence of the key should be checked
-   * on the caller function.
-   */
-  iterator _insert(const value_type &val) {
-    node_ptr y = _nil;
-    node_ptr x = _root;
-    while (x != _nil) {
-      y = x;
-      if (!_comp(val.first, _key(x)) && !_comp(_key(x), val.first)) {
-        return iterator(x, _nil);
-      } else if (_comp(val.first, _key(x)))
-        x = x->left;
-      else
-        x = x->right;
-    }
-    node_ptr z = _new_node(val);
-    z->parent = y;
-    if (y == _nil)
-      _root = z;
-    else if (_comp(_key(z), _key(y)))
-      y->left = z;
-    else
-      y->right = z;
-    _insert_fixup(z);
-    ++_size;
-    _update_nil();
-    return iterator(z, _nil);
-  }
-
   ft::pair<iterator, bool> insert_unique(const value_type &val) {
     iterator it = _insert(val);
     return ft::make_pair(it, it == end());
@@ -472,16 +433,32 @@ public:
     }
   }
 
-  void remove(const key_type &k) {
-    node_ptr node = _find(k);
-    if (node != _nil) {
-      _remove(node);
-      _node_alloc.destroy(node);
-      _node_alloc.deallocate(node, 1);
-      _size--;
-    }
-    _update_nil();
+  void erase(iterator pos) {
+    if (pos == end())
+      return;
+    _remove(pos._node);
   }
+
+  size_type erase(const key_type &key) {
+    node_ptr node = _find(key);
+    if (node == _nil)
+      return 0;
+    _remove(node);
+    return 1;
+  }
+
+  void erase(iterator first, iterator last) {
+    for (; first != last; ++first) {
+      erase(first);
+    }
+  }
+
+  iterator find(const key_type &key) {
+    node_ptr node = _find(key);
+    return iterator(node, _nil);
+  }
+
+  void remove(const key_type &k) { node_ptr node = _find(k); }
 
   void clear() {
     _destroy_tree(_root);
@@ -504,9 +481,6 @@ private:
   node_ptr _new_nil_node() {
     node_ptr tmp = _node_alloc.allocate(1);
     _node_alloc.construct(tmp, node_type(BLACK));
-    tmp->parent = _root;
-    // tmp->left = _minimum(_root);
-    // tmp->right = _maximum(_root);
     return tmp;
   }
 
@@ -514,26 +488,6 @@ private:
     _nil->parent = _root;
     _nil->left = _minimum(_root);
     _nil->right = _maximum(_root);
-  }
-
-  /* @brief Find the node with the given value
-   * @param value The value to find
-   * @return The node with the given value. If the value is not found,
-   * return the nil node
-   */
-  node_ptr _find(const key_type &k) const {
-    node_ptr node;
-
-    node = _root;
-    while (node != _nil) {
-      if (!(_comp(k, _key(node)) || _comp(_key(node), k)))
-        return node;
-      else if (_comp(k, _key(node)))
-        node = node->left;
-      else
-        node = node->right;
-    }
-    return _nil;
   }
 
   /* @brief Get the node with the minimum value in the subtree rooted at node.
@@ -554,6 +508,26 @@ private:
   node_ptr _maximum(node_ptr node) const {
     while (node->right != _nil) {
       node = node->right;
+    }
+    return node;
+  }
+
+  /* @brief Find the node with the given value
+   * @param value The value to find
+   * @return The node with the given value. If the value is not found,
+   * return the nil node
+   */
+  node_ptr _find(const key_type &k) const {
+    node_ptr node;
+
+    node = _root;
+    while (node != _nil) {
+      if (!(_comp(k, _key(node)) || _comp(_key(node), k)))
+        return node;
+      else if (_comp(k, _key(node)))
+        node = node->left;
+      else
+        node = node->right;
     }
     return node;
   }
@@ -581,6 +555,89 @@ private:
     if (new_node->right != _nil)
       new_node->right->parent = new_node;
     return new_node;
+  }
+
+  /* @brief Inserts a new node with the given key and mapped value.
+   *
+   * @param value_type A pair of the key and the mapped value.
+   * @return An iterator to the inserted node.
+   *
+   * Inserts a new node with the given key and value.
+   * If the key already exists, the value is not updated.
+   * For optimization, the non-existence of the key should be checked
+   * on the caller function.
+   *
+   *
+   *   p                           p
+   *  / \                         / \
+   * l   q                       l   q
+   *    / \   =>                /   / \
+   *   p   r                   z   l   q
+   *
+   */
+  iterator _insert(const value_type &val) {
+    node_ptr y = _nil;
+    node_ptr x = _root;
+    while (x != _nil) {
+      y = x;
+      if (!_comp(val.first, _key(x)) && !_comp(_key(x), val.first)) {
+        return iterator(x, _nil);
+      } else if (_comp(val.first, _key(x)))
+        x = x->left;
+      else
+        x = x->right;
+    }
+    node_ptr z = _new_node(val);
+    z->parent = y;
+    if (y == _nil)
+      _root = z;
+    else if (_comp(_key(z), _key(y)))
+      y->left = z;
+    else
+      y->right = z;
+    _insert_fixup(z);
+    ++_size;
+    _update_nil();
+    return iterator(z, _nil);
+  }
+
+  void _insert_fixup(node_ptr z) {
+    while (z->parent->color == RED) {
+      if (z->parent == z->parent->parent->left) {
+        node_ptr y = z->parent->parent->right;
+        if (y->color == RED) {
+          z->parent->color = BLACK;
+          y->color = BLACK;
+          z->parent->parent->color = RED;
+          z = z->parent->parent;
+        } else {
+          if (z == z->parent->right) {
+            z = z->parent;
+            _left_rotate(z);
+          }
+          z->parent->color = BLACK;
+          z->parent->parent->color = RED;
+          _right_rotate(z->parent->parent);
+        }
+      } else {
+        node_ptr y = z->parent->parent->left;
+        if (y->color == RED) {
+          z->parent->color = BLACK;
+          y->color = BLACK;
+          z->parent->parent->color = RED;
+          z = z->parent->parent;
+        } else {
+          if (z == z->parent->left) {
+            z = z->parent;
+            _right_rotate(z);
+          }
+          z->parent->color = BLACK;
+          z->parent->parent->color = RED;
+          _left_rotate(z->parent->parent);
+        }
+      }
+    }
+    _root->color = BLACK;
   }
 
   /*
@@ -640,6 +697,11 @@ private:
     }
     if (y_original_color == BLACK) {
       _remove_fixup(x);
+    }
+    if (z != _nil) {
+      _destroy_node(z);
+      _size--;
+      _update_nil();
     }
   }
 
@@ -712,84 +774,6 @@ private:
       u->parent->right = v;
     }
     v->parent = u->parent;
-  }
-
-  /* @brief Inserts a node into the tree.
-   *
-   * @param z The node to be inserted.
-   *
-   * This function is called by public method insert().
-   * The value of z is inserted into the tree, and its lacking
-   * is checked before calling this function.
-   *
-   *
-   *   p                           p
-   *  / \                         / \
-   * l   q                       l   q
-   *    / \   =>                /   / \
-   *   p   r                   z   l   q
-   *
-   */
-
-  void _insert(node_ptr z) {
-    node_ptr y = _nil;
-    node_ptr x = _root;
-    while (x != _nil) {
-      y = x;
-      if (!_comp(_key(z), _key(x)) && !_comp(_key(x), _key(z))) {
-        _destroy_node(z);
-        return;
-      } else if (_comp(_key(z), _key(x)))
-        x = x->left;
-      else
-        x = x->right;
-    }
-    z->parent = y;
-    if (y == _nil)
-      _root = z;
-    else if (_comp(_key(z), _key(y)))
-      y->left = z;
-    else
-      y->right = z;
-  }
-
-  void _insert_fixup(node_ptr z) {
-    while (z->parent->color == RED) {
-      if (z->parent == z->parent->parent->left) {
-        node_ptr y = z->parent->parent->right;
-        if (y->color == RED) {
-          z->parent->color = BLACK;
-          y->color = BLACK;
-          z->parent->parent->color = RED;
-          z = z->parent->parent;
-        } else {
-          if (z == z->parent->right) {
-            z = z->parent;
-            _left_rotate(z);
-          }
-          z->parent->color = BLACK;
-          z->parent->parent->color = RED;
-          _right_rotate(z->parent->parent);
-        }
-      } else {
-        node_ptr y = z->parent->parent->left;
-        if (y->color == RED) {
-          z->parent->color = BLACK;
-          y->color = BLACK;
-          z->parent->parent->color = RED;
-          z = z->parent->parent;
-        } else {
-          if (z == z->parent->left) {
-            z = z->parent;
-            _right_rotate(z);
-          }
-          z->parent->color = BLACK;
-          z->parent->parent->color = RED;
-          _left_rotate(z->parent->parent);
-        }
-      }
-    }
-    _root->color = BLACK;
   }
 
   /* @brief Left Rotate

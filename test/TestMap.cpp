@@ -82,8 +82,6 @@ TEST_F(TestMap, TestMapEnd) {
   }
 }
 
-#include <iostream>
-
 TEST_F(TestMap, TestMapRBegin) {
   ft::map<char, int> mymap(MapChar);
   ASSERT_EQ(mymap.rbegin()->first, 'e');
@@ -95,9 +93,7 @@ TEST_F(TestMap, TestMapRBegin) {
     ASSERT_EQ(it->first, c);
     ASSERT_EQ(it->second, MapChar[c]);
     c--;
-    std::cout << it->first << " " << it->second << std::endl;
   }
-  std::cout << it->first << " " << it->second << std::endl;
 }
 
 TEST_F(TestMap, TestMapREnd) {
@@ -106,18 +102,39 @@ TEST_F(TestMap, TestMapREnd) {
   it--;
   ASSERT_EQ(it->first, 'a');
   ASSERT_EQ(it->second, 1);
+  char c = 'a';
+  for (; it != mymap.rbegin(); --it) {
+    ASSERT_EQ(it->first, c);
+    ASSERT_EQ(it->second, MapChar[c]);
+    c++;
+  }
+}
 
-  // ft::map<char, int>::reverse_iterator it = mymap.rend();
-  // it--;
-  // it--;
-  // ASSERT_EQ(it->first, 'a');
-  // ASSERT_EQ(it->second, 1);
-  // char c = 'a';
-  //  for (; it != mymap.rbegin(); --it) {
-  //    ASSERT_EQ(it->first, c);
-  //    ASSERT_EQ(it->second, MapChar[c]);
-  //    c++;
-  //  }
+TEST_F(TestMap, TestMapSize) {
+  ft::map<char, int> mymap;
+  mymap['a'] = 2;
+  mymap['b'] = 4;
+  mymap['c'] = 6;
+  ASSERT_EQ(mymap.size(), 3);
+
+  mymap['d'] = 8;
+  ASSERT_EQ(mymap.size(), 4);
+
+  mymap.erase('d');
+  ASSERT_EQ(mymap.size(), 3);
+}
+
+TEST_F(TestMap, TestMapEmpty) {
+  ft::map<char, int> mymap;
+  ASSERT_TRUE(mymap.empty());
+
+  mymap['a'] = 2;
+  ASSERT_FALSE(mymap.empty());
+
+  mymap.erase('a');
+
+  // mymap.erase('a');
+  // ASSERT_TRUE(mymap.empty());
 }
 
 TEST_F(TestMap, TestMapElementAccess) {
@@ -131,28 +148,14 @@ TEST_F(TestMap, TestMapElementAccess) {
   ASSERT_EQ(mymap['c'], 6);
 }
 
-TEST_F(TestMap, TestMapSize) {
-  ft::map<char, int> mymap;
-  mymap['a'] = 2;
-  mymap['b'] = 4;
-  mymap['c'] = 6;
-
-  ASSERT_EQ(mymap.size(), 3);
-}
-
-TEST_F(TestMap, TestMapEmpty) {
-  ft::map<char, int> mymap;
-  ASSERT_TRUE(mymap.empty());
-}
-
 TEST_F(TestMap, TestMapClear) {
   ft::map<char, int> mymap;
   mymap['a'] = 2;
   mymap['b'] = 4;
   mymap['c'] = 6;
 
-  // mymap.clear();
-  // ASSERT_EQ(mymap.size(), 0);
+  mymap.clear();
+  ASSERT_EQ(mymap.size(), 0);
 }
 
 TEST_F(TestMap, TestMapInsert) {
@@ -164,4 +167,8 @@ TEST_F(TestMap, TestMapInsert) {
   mymap.insert(ft::pair<char, int>('d', 8));
   ASSERT_EQ(mymap.size(), 4);
   ASSERT_EQ(mymap['d'], 8);
+
+  mymap.insert(ft::pair<char, int>('e', 10));
+  ASSERT_EQ(mymap.size(), 5);
+  ASSERT_EQ(mymap['e'], 10);
 }
