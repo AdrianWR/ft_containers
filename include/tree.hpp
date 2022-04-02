@@ -112,8 +112,9 @@ public:
   typedef typename Node<T>::node_ptr node_ptr;
   typedef Node<T> *link_type;
 
-private:
   node_ptr _node;
+
+private:
   node_ptr _leaf;
 
 public:
@@ -448,9 +449,25 @@ public:
   }
 
   void erase(iterator first, iterator last) {
-    for (; first != last; ++first) {
-      erase(first);
+    if (first == begin() && last == end()) {
+      clear();
+    } else {
+      while (first != last) {
+        erase(first++);
+      }
     }
+  }
+
+  void swap(RedBlackTree &tree) {
+    RedBlackTree<Key, T, Compare, Alloc> tmp(tree);
+    tree = *this;
+    *this = tmp;
+  }
+
+  void clear() {
+    _destroy_tree(_root);
+    _root = _nil;
+    _size = 0;
   }
 
   iterator find(const key_type &key) {
@@ -458,13 +475,36 @@ public:
     return iterator(node, _nil);
   }
 
-  void remove(const key_type &k) { node_ptr node = _find(k); }
-
-  void clear() {
-    _destroy_tree(_root);
-    _root = _nil;
-    _size = 0;
+  const_iterator find(const key_type &key) const {
+    node_ptr node = _find(key);
+    return const_iterator(node, _nil);
   }
+
+  size_type count(const key_type &key) const {
+    return _find(key) == _nil ? 0 : 1;
+  }
+
+  iterator lower_bound(const key_type &key) {
+    node_ptr node = _lower_bound(key);
+    return iterator(node, _nil);
+  }
+
+  const_iterator lower_bound(const key_type &key) const {
+    node_ptr node = _lower_bound(key);
+    return const_iterator(node, _nil);
+  }
+
+  iterator upper_bound(const key_type &key) {
+    node_ptr node = _upper_bound(key);
+    return iterator(node, _nil);
+  }
+
+  const_iterator upper_bound(const key_type &key) const {
+    node_ptr node = _upper_bound(key);
+    return const_iterator(node, _nil);
+  }
+
+  key_compare key_comp() const { return _comp; }
 
 private:
   // Private methods
@@ -529,7 +569,7 @@ private:
       else
         node = node->right;
     }
-    return node;
+    return _nil;
   }
 
   /*
@@ -699,9 +739,9 @@ private:
       _remove_fixup(x);
     }
     if (z != _nil) {
+      _update_nil();
       _destroy_node(z);
       _size--;
-      _update_nil();
     }
   }
 

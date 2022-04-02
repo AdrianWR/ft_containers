@@ -25,31 +25,31 @@ public:
   }
 };
 
-// TEST(TestNode, TestNodeConstructor) {
-//   ft::Node<int> node_zero;
-//   EXPECT_EQ(node_zero.parent, ft::_nullptr);
-//   EXPECT_EQ(node_zero.left, ft::_nullptr);
-//   EXPECT_EQ(node_zero.right, ft::_nullptr);
-//
-//   ft::Node<int> node(1, ft::color::RED, ft::_nullptr);
-//   EXPECT_EQ(node.left, ft::_nullptr);
-//   EXPECT_EQ(node.right, ft::_nullptr);
-//   EXPECT_EQ(node.parent, ft::_nullptr);
-//
-//   ft::Node<int> node3(node);
-//   EXPECT_EQ(node3.parent, ft::_nullptr);
-//   EXPECT_EQ(node3.left, ft::_nullptr);
-//   EXPECT_EQ(node3.right, ft::_nullptr);
-//   EXPECT_EQ(node3.color, ft::color::RED);
-//
-//   ft::Node<int> node5;
-//   node5 = node;
-//   EXPECT_EQ(node5.parent, ft::_nullptr);
-//   EXPECT_EQ(node5.left, ft::_nullptr);
-//   EXPECT_EQ(node5.right, ft::_nullptr);
-//   EXPECT_EQ(node5.color, ft::color::RED);
-// }
-//
+TEST(TestNode, TestNodeConstructor) {
+  ft::Node<int> node_zero;
+  EXPECT_EQ(node_zero.parent, ft::_nullptr);
+  EXPECT_EQ(node_zero.left, ft::_nullptr);
+  EXPECT_EQ(node_zero.right, ft::_nullptr);
+
+  ft::Node<int> node(1, ft::color::RED, ft::_nullptr);
+  EXPECT_EQ(node.left, ft::_nullptr);
+  EXPECT_EQ(node.right, ft::_nullptr);
+  EXPECT_EQ(node.parent, ft::_nullptr);
+
+  ft::Node<int> node3(node);
+  EXPECT_EQ(node3.parent, ft::_nullptr);
+  EXPECT_EQ(node3.left, ft::_nullptr);
+  EXPECT_EQ(node3.right, ft::_nullptr);
+  EXPECT_EQ(node3.color, ft::color::RED);
+
+  ft::Node<int> node5;
+  node5 = node;
+  EXPECT_EQ(node5.parent, ft::_nullptr);
+  EXPECT_EQ(node5.left, ft::_nullptr);
+  EXPECT_EQ(node5.right, ft::_nullptr);
+  EXPECT_EQ(node5.color, ft::color::RED);
+}
+
 TEST(TestTreeConstructor, TestTreeDefaultConstructor) {
   ft::RedBlackTree<int, int> tree;
   EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);

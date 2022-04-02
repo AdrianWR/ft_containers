@@ -211,11 +211,7 @@ public:
    * @return An iterator to the inserted element.
    */
   iterator insert(iterator hint, const value_type &val) {
-    if (key_compare(hint->first, val.first)) {
-      return _tree.insert_unique(hint, val);
-    } else {
-      return _tree.insert_unique(val);
-    }
+    return _tree.insert_unique(hint, val);
   }
 
   /**
@@ -226,7 +222,9 @@ public:
    * @return An iterator to the element after the last inserted element.
    */
   template <class InputIterator>
-  ft::pair<iterator, bool> insert(InputIterator first, InputIterator last) {}
+  void insert(InputIterator first, InputIterator last) {
+    _tree.insert_unique(first, last);
+  }
 
   /**
    * @brief Erase an element by iterator
@@ -235,7 +233,7 @@ public:
    * @return An iterator to the element after the erased element.
    */
 
-  iterator erase(iterator pos) { return _tree.erase(pos); }
+  void erase(iterator pos) { return _tree.erase(pos); }
 
   /**
    * @brief Erase an element by key
@@ -253,9 +251,15 @@ public:
    * @return An iterator to the element after the last erased element.
    */
 
-  iterator erase(iterator first, iterator last) {
-    return _tree.erase(first, last);
-  }
+  void erase(iterator first, iterator last) { return _tree.erase(first, last); }
+
+  /**
+   * @brief Swap the contents of the container with those of another.
+   *
+   * @param x The other map.
+   * @return void
+   */
+  void swap(map &x) { _tree.swap(x._tree); }
 
   /**
    * @brief Clear the container
@@ -266,6 +270,23 @@ public:
    */
   void clear() { _tree.clear(); }
 
+  // Observers
+
+  /**
+   * @brief Returns the comparison object.
+   *
+   * @return The comparison object.
+   */
+  key_compare key_comp() const { return _tree.key_comp(); }
+
+  /**
+   * @brief Returns the comparison object.
+   *
+   * @return The comparison object.
+   */
+
+  value_compare value_comp() const { return value_compare(_tree.key_comp()); }
+
   // Operations
 
   /**
@@ -275,23 +296,9 @@ public:
    * @return An iterator to the element, or end() if the element is not found.
    */
 
-  iterator find(const key_type &key) {
-    for (iterator it = begin(); it != end(); it++) {
-      if (!(key_compare(key, it->first) || key_compare(it->first, key))) {
-        return it;
-      }
-    }
-    return end();
-  }
+  iterator find(const key_type &key) { return _tree.find(key); }
 
-  const_iterator find(const key_type &key) const {
-    for (const_iterator it = begin(); it != end(); it++) {
-      if (!(key_compare(key, it->first) || key_compare(it->first, key))) {
-        return it;
-      }
-    }
-    return end();
-  }
+  const_iterator find(const key_type &key) const { return _tree.find(key); }
 
   /**
    * @brief Count elements with a specific key
