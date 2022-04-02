@@ -461,3 +461,87 @@ TEST_F(TestMap, TestMapEqualRange) {
   ASSERT_EQ(it2.first->first, 'i');
   ASSERT_EQ(it2.second->first, 'i');
 };
+
+TEST_F(TestMap, TestGetAllocator) {
+  ft::map<char, int> mymap;
+  std::allocator<std::pair<const char, int>> alloc;
+  ASSERT_EQ(mymap.get_allocator(), alloc);
+};
+
+TEST_F(TestMap, TestMapComparisonOperators) {
+  ft::map<char, int> mymap1;
+  ft::map<char, int> mymap2;
+  ft::map<char, int> mymap3;
+  ft::map<char, int> mymap4;
+
+  mymap1['a'] = 2;
+  mymap1['b'] = 4;
+  mymap1['c'] = 6;
+  mymap1['d'] = 8;
+  mymap1['e'] = 10;
+  mymap1['f'] = 12;
+  mymap1['i'] = 18;
+  mymap1['l'] = 24;
+  mymap1['m'] = 26;
+  mymap1['p'] = 32;
+
+  mymap2['a'] = 2;
+  mymap2['b'] = 4;
+  mymap2['c'] = 6;
+  mymap2['d'] = 8;
+  mymap2['e'] = 10;
+  mymap2['f'] = 12;
+  mymap2['i'] = 18;
+
+  mymap3['a'] = 2;
+  mymap3['b'] = 4;
+  mymap3['c'] = 6;
+  mymap3['d'] = 8;
+  mymap3['e'] = 10;
+  mymap3['f'] = 12;
+  mymap3['i'] = 18;
+  mymap3['l'] = 24;
+  mymap3['m'] = 26;
+  mymap3['p'] = 32;
+
+  ASSERT_TRUE(mymap1 == mymap3);
+  ASSERT_TRUE(mymap1 != mymap2);
+  ASSERT_TRUE(mymap2 < mymap1);
+  ASSERT_TRUE(mymap1 > mymap2);
+  ASSERT_TRUE(mymap1 <= mymap3);
+  ASSERT_TRUE(mymap1 >= mymap3);
+  ASSERT_TRUE(mymap1 <= mymap1);
+  ASSERT_TRUE(mymap1 >= mymap1);
+};
+
+TEST_F(TestMap, TestMapSwapOperator) {
+  ft::map<char, int> mymap1;
+  ft::map<char, int> mymap2;
+
+  mymap1['a'] = 2;
+  mymap1['b'] = 4;
+  mymap1['c'] = 6;
+  mymap1['d'] = 8;
+  mymap1['e'] = 10;
+  mymap1['f'] = 12;
+  mymap1['i'] = 18;
+  mymap1['l'] = 24;
+  mymap1['m'] = 26;
+  mymap1['p'] = 32;
+
+  mymap2['a'] = 2;
+  mymap2['b'] = 4;
+  mymap2['c'] = 6;
+  mymap2['d'] = 8;
+  mymap2['e'] = 10;
+  mymap2['f'] = 12;
+  mymap2['i'] = 18;
+  mymap2['l'] = 24;
+  mymap2['m'] = 26;
+  mymap2['p'] = 32;
+
+  ft::swap(mymap1, mymap2);
+
+  ASSERT_TRUE(mymap1 == mymap2);
+  ASSERT_TRUE(mymap2 == mymap1);
+}

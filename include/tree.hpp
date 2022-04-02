@@ -1,6 +1,7 @@
 #ifndef TREE_HPP
 #define TREE_HPP
 
+#include "algorithm.hpp"
 #include "functional.hpp"
 #include "iterator.hpp"
 #include "nullptr.hpp"
@@ -511,6 +512,8 @@ public:
     return ft::make_pair(lower_bound(key), upper_bound(key));
   }
 
+  allocator_type get_allocator() const { return allocator_type(_alloc); }
+
 private:
   // Private methods
 
@@ -909,17 +912,48 @@ private:
    */
 };
 
-template <class Key, class T>
-inline bool operator==(const RedBlackTree<Key, T> &lhs,
-                       const RedBlackTree<Key, T> &rhs) {
+template <class Key, class T, class Compare, class Alloc>
+bool operator==(const ft::RedBlackTree<Key, T, Compare, Alloc> &lhs,
+                const ft::RedBlackTree<Key, T, Compare, Alloc> &rhs) {
   return lhs.size() == rhs.size() &&
-         std::equal(lhs.begin(), lhs.end(), rhs.begin());
+         ft::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 
-template <class Key, class T>
-inline bool operator!=(const RedBlackTree<Key, T> &lhs,
-                       const RedBlackTree<Key, T> &rhs) {
+template <class Key, class T, class Compare, class Alloc>
+bool operator!=(const RedBlackTree<Key, T, Compare, Alloc> &lhs,
+                const RedBlackTree<Key, T, Compare, Alloc> &rhs) {
   return !(lhs == rhs);
+}
+
+template <class Key, class T, class Compare, class Alloc>
+bool operator<(const RedBlackTree<Key, T, Compare, Alloc> &lhs,
+               const RedBlackTree<Key, T, Compare, Alloc> &rhs) {
+  return ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(),
+                                     rhs.end());
+}
+
+template <class Key, class T, class Compare, class Alloc>
+bool operator>(const RedBlackTree<Key, T, Compare, Alloc> &lhs,
+               const RedBlackTree<Key, T, Compare, Alloc> &rhs) {
+  return rhs < lhs;
+}
+
+template <class Key, class T, class Compare, class Alloc>
+bool operator<=(const RedBlackTree<Key, T, Compare, Alloc> &lhs,
+                const RedBlackTree<Key, T, Compare, Alloc> &rhs) {
+  return !(rhs < lhs);
+}
+
+template <class Key, class T, class Compare, class Alloc>
+bool operator>=(const RedBlackTree<Key, T, Compare, Alloc> &lhs,
+                const RedBlackTree<Key, T, Compare, Alloc> &rhs) {
+  return !(lhs < rhs);
+}
+
+template <class Key, class T, class Compare, class Alloc>
+void swap(RedBlackTree<Key, T, Compare, Alloc> &lhs,
+          RedBlackTree<Key, T, Compare, Alloc> &rhs) {
+  lhs.swap(rhs);
 }
 
 } // namespace ft
