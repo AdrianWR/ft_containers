@@ -470,6 +470,8 @@ public:
     _size = 0;
   }
 
+  key_compare key_comp() const { return _comp; }
+
   iterator find(const key_type &key) {
     node_ptr node = _find(key);
     return iterator(node, _nil);
@@ -485,29 +487,56 @@ public:
   }
 
   iterator lower_bound(const key_type &key) {
-    node_ptr node = _lower_bound(key);
-    return iterator(node, _nil);
+    return iterator(_lower_bound(key), _nil);
   }
 
   const_iterator lower_bound(const key_type &key) const {
-    node_ptr node = _lower_bound(key);
-    return const_iterator(node, _nil);
+    return const_iterator(_lower_bound(key), _nil);
   }
 
   iterator upper_bound(const key_type &key) {
-    node_ptr node = _upper_bound(key);
-    return iterator(node, _nil);
+    return iterator(_upper_bound(key), _nil);
   }
 
   const_iterator upper_bound(const key_type &key) const {
-    node_ptr node = _upper_bound(key);
-    return const_iterator(node, _nil);
+    return const_iterator(_upper_bound(key), _nil);
   }
 
-  key_compare key_comp() const { return _comp; }
+  ft::pair<iterator, iterator> equal_range(const key_type &key) {
+    return ft::make_pair(lower_bound(key), upper_bound(key));
+  }
+
+  ft::pair<const_iterator, const_iterator>
+  equal_range(const key_type &key) const {
+    return ft::make_pair(lower_bound(key), upper_bound(key));
+  }
 
 private:
   // Private methods
+
+  node_ptr _lower_bound(const key_type &key) const {
+    node_ptr x = _root;
+    node_ptr y = _nil;
+    while (x != _nil) {
+      if (!_comp(_key(x), key))
+        y = x, x = x->left;
+      else
+        x = x->right;
+    }
+    return y;
+  }
+
+  node_ptr _upper_bound(const key_type &key) const {
+    node_ptr x = _root;
+    node_ptr y = _nil;
+    while (x != _nil) {
+      if (_comp(key, _key(x)))
+        y = x, x = x->left;
+      else
+        x = x->right;
+    }
+    return y;
+  }
 
   const key_type _key(node_ptr node) const { return node->data->first; }
 
@@ -872,6 +901,12 @@ private:
     y->right = x;
     x->parent = y;
   }
+
+  /* @brief Update the nil node
+   *
+   * The nil node is used to simplify the code.
+   * It is always black, and has no parent, left or right child.
+   */
 };
 
 template <class Key, class T>

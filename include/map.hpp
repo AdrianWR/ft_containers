@@ -285,7 +285,7 @@ public:
    * @return The comparison object.
    */
 
-  value_compare value_comp() const { return value_compare(_tree.key_comp()); }
+  value_compare value_comp() const { return value_compare(key_comp()); }
 
   // Operations
 
@@ -323,22 +323,10 @@ public:
    * @return An iterator to the first element that has a key equivalent to
    * key or goes after. If no such element is found, end() is returned.
    */
-  iterator lower_bound(const key_type &k) {
-    for (iterator it = begin(); it != end(); ++it) {
-      if (!key_compare(k, it->first)) {
-        return it;
-      }
-    }
-    return end();
-  }
+  iterator lower_bound(const key_type &k) { return _tree.lower_bound(k); }
 
   const_iterator lower_bound(const key_type &k) const {
-    for (const_iterator it = begin(); it != end(); ++it) {
-      if (!key_compare(k, it->first)) {
-        return it;
-      }
-    }
-    return end();
+    return _tree.lower_bound(k);
   }
 
   /**
@@ -350,22 +338,27 @@ public:
    * returned.
    */
 
-  iterator upper_bound(const key_type &k) {
-    for (iterator it = begin(); it != end(); ++it) {
-      if (key_compare(k, it->first)) {
-        return it;
-      }
-    }
-    return end();
-  }
+  iterator upper_bound(const key_type &k) { return _tree.upper_bound(k); }
 
   const_iterator upper_bound(const key_type &k) const {
-    for (const_iterator it = begin(); it != end(); ++it) {
-      if (key_compare(k, it->first)) {
-        return it;
-      }
-    }
-    return end();
+    return _tree.upper_bound(k);
+  }
+
+  /**
+   * @brief Return range of equal elements
+   *
+   * @param key The key of the element to be found.
+   * @return A pair of iterators that delimit a range of elements with key
+   * equivalent to key. If no such element is found, the range returned has
+   * first == last.
+   */
+  ft::pair<iterator, iterator> equal_range(const key_type &k) {
+    return _tree.equal_range(k);
+  }
+
+  ft::pair<const_iterator, const_iterator>
+  equal_range(const key_type &k) const {
+    return _tree.equal_range(k);
   }
 };
 

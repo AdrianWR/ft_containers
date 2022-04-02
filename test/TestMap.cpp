@@ -269,7 +269,56 @@ TEST_F(TestMap, TestMapSwap) {
   ASSERT_EQ(mymap2['e'], 10);
 }
 
-TEST_F(TestMap, TestFind) {
+TEST_F(TestMap, TestKeyComp) {
+  ft::map<char, int> mymap1;
+  mymap1['a'] = 2;
+  mymap1['b'] = 4;
+  mymap1['c'] = 6;
+  mymap1['d'] = 8;
+  mymap1['e'] = 10;
+
+  ft::map<char, int> mymap2;
+  mymap2['f'] = 12;
+  mymap2['g'] = 14;
+  mymap2['h'] = 16;
+  mymap2['i'] = 18;
+  mymap2['j'] = 20;
+
+  ft::map<char, int>::key_compare kc = mymap1.key_comp();
+  ASSERT_TRUE(kc('a', 'b'));
+  ASSERT_TRUE(kc('b', 'c'));
+  ASSERT_TRUE(kc('c', 'd'));
+  ASSERT_TRUE(kc('d', 'e'));
+  ASSERT_TRUE(kc('e', 'f'));
+  ASSERT_TRUE(kc('f', 'g'));
+  ASSERT_TRUE(kc('g', 'h'));
+  ASSERT_TRUE(kc('h', 'i'));
+  ASSERT_TRUE(kc('i', 'j'));
+
+  ft::map<char, int>::iterator it;
+  for (it = mymap1.begin(); it != mymap1.end(); ++it) {
+    ASSERT_TRUE(kc(it->first, it->first + 1));
+  }
+}
+
+TEST_F(TestMap, TestMapValueComp) {
+  ft::map<char, int> mymap1;
+  mymap1['a'] = 2;
+  mymap1['b'] = 4;
+  mymap1['c'] = 6;
+  mymap1['d'] = 8;
+  mymap1['e'] = 10;
+
+  ft::map<char, int>::value_compare vc = mymap1.value_comp();
+
+  ft::map<char, int>::iterator it;
+  ft::pair<char, int> highest = ft::make_pair('f', 12);
+  for (it = mymap1.begin(); it != mymap1.end(); ++it) {
+    ASSERT_TRUE(vc(*it, highest));
+  }
+}
+
+TEST_F(TestMap, TestMapFind) {
   ft::map<char, int> mymap;
   mymap['a'] = 2;
   mymap['b'] = 4;
@@ -283,4 +332,132 @@ TEST_F(TestMap, TestFind) {
 
   it = mymap.find('f');
   ASSERT_EQ(it, mymap.end());
-}
+
+  const ft::map<char, int> mymap2(mymap);
+  ft::map<char, int>::const_iterator it2 = mymap2.find('a');
+  ASSERT_EQ(it2->first, 'a');
+  ASSERT_EQ(it2->second, 2);
+};
+
+TEST_F(TestMap, TestMapCount) {
+  ft::map<char, int> mymap;
+  mymap['a'] = 2;
+  mymap['b'] = 4;
+  mymap['c'] = 6;
+  mymap['d'] = 8;
+  mymap['e'] = 10;
+
+  ASSERT_EQ(mymap.count('a'), 1);
+  ASSERT_EQ(mymap.count('f'), 0);
+};
+
+TEST_F(TestMap, TestMapLowerBound) {
+  ft::map<char, int> mymap;
+  mymap['a'] = 2;
+  mymap['b'] = 4;
+  mymap['c'] = 6;
+  mymap['d'] = 8;
+  mymap['e'] = 10;
+  mymap['f'] = 12;
+  mymap['i'] = 18;
+  mymap['l'] = 24;
+  mymap['m'] = 26;
+  mymap['p'] = 32;
+
+  ft::map<char, int>::iterator it = mymap.lower_bound('a');
+  ASSERT_EQ(it->first, 'a');
+  ASSERT_EQ(it->second, 2);
+
+  it = mymap.lower_bound('b');
+  ASSERT_EQ(it->first, 'b');
+  ASSERT_EQ(it->second, 4);
+
+  it = mymap.lower_bound('g');
+  ASSERT_EQ(it->first, 'i');
+
+  const ft::map<char, int> mymap2(mymap);
+  ft::map<char, int>::const_iterator it2 = mymap2.lower_bound('a');
+  ASSERT_EQ(it2->first, 'a');
+  ASSERT_EQ(it2->second, 2);
+
+  ft::map<char, int>::const_iterator it3 = mymap2.lower_bound('q');
+  ASSERT_EQ(it3, mymap2.end());
+};
+
+TEST_F(TestMap, TestMapUpperBound) {
+  ft::map<char, int> mymap;
+  mymap['a'] = 2;
+  mymap['b'] = 4;
+  mymap['c'] = 6;
+  mymap['d'] = 8;
+  mymap['e'] = 10;
+  mymap['f'] = 12;
+  mymap['i'] = 18;
+  mymap['l'] = 24;
+  mymap['m'] = 26;
+  mymap['p'] = 32;
+
+  ft::map<char, int>::iterator it = mymap.upper_bound('a');
+  ASSERT_EQ(it->first, 'b');
+  ASSERT_EQ(it->second, 4);
+
+  it = mymap.upper_bound('b');
+  ASSERT_EQ(it->first, 'c');
+  ASSERT_EQ(it->second, 6);
+
+  it = mymap.upper_bound('g');
+  ASSERT_EQ(it->first, 'i');
+
+  const ft::map<char, int> mymap2(mymap);
+  ft::map<char, int>::const_iterator it2 = mymap2.upper_bound('a');
+  ASSERT_EQ(it2->first, 'b');
+  ASSERT_EQ(it2->second, 4);
+
+  ft::map<char, int>::const_iterator it3 = mymap2.upper_bound('q');
+  ASSERT_EQ(it3, mymap2.end());
+};
+
+TEST_F(TestMap, TestMapEqualRange) {
+  ft::map<char, int> mymap;
+  mymap['a'] = 2;
+  mymap['b'] = 4;
+  mymap['c'] = 6;
+  mymap['d'] = 8;
+  mymap['e'] = 10;
+  mymap['f'] = 12;
+  mymap['i'] = 18;
+  mymap['l'] = 24;
+  mymap['m'] = 26;
+  mymap['p'] = 32;
+
+  ft::pair<ft::map<char, int>::iterator, ft::map<char, int>::iterator> it =
+      mymap.equal_range('a');
+
+  ASSERT_EQ(it.first->first, 'a');
+  ASSERT_EQ(it.second->first, 'b');
+
+  it = mymap.equal_range('b');
+  ASSERT_EQ(it.first->first, 'b');
+  ASSERT_EQ(it.second->first, 'c');
+
+  it = mymap.equal_range('g');
+  ASSERT_EQ(it.first->first, 'i');
+  ASSERT_EQ(it.second->first, 'i');
+
+  const ft::map<char, int> mymap2(mymap);
+
+  ft::pair<ft::map<char, int>::const_iterator,
+           ft::map<char, int>::const_iterator>
+      it2 = mymap2.equal_range('a');
+
+  ASSERT_EQ(it2.first->first, 'a');
+  ASSERT_EQ(it2.second->first, 'b');
+
+  it2 = mymap2.equal_range('b');
+  ASSERT_EQ(it2.first->first, 'b');
+  ASSERT_EQ(it2.second->first, 'c');
+
+  it2 = mymap2.equal_range('g');
+  ASSERT_EQ(it2.first->first, 'i');
+  ASSERT_EQ(it2.second->first, 'i');
+};
