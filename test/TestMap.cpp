@@ -222,7 +222,7 @@ TEST_F(TestMap, TestMapErase) {
   ft::map<char, int>::iterator ite = m2.end();
   it++;
   ASSERT_EQ(it->first, 'b');
-  // m2.erase(it, ite);
+  m2.erase(it, ite);
 }
 
 TEST_F(TestMap, TestClear) {
@@ -233,8 +233,7 @@ TEST_F(TestMap, TestClear) {
   mymap['d'] = 8;
   mymap['e'] = 10;
 
-  // mymap.clear();
-  mymap.erase(mymap.begin(), mymap.end());
+  mymap.clear();
   ASSERT_EQ(mymap.size(), 0);
 }
 

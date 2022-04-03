@@ -435,29 +435,20 @@ public:
     }
   }
 
-  void erase(iterator pos) {
-    if (pos == end())
+  void erase(iterator position) {
+    if (position == end())
       return;
-    _remove(pos._node);
+    _erase_aux(position);
   }
 
   size_type erase(const key_type &key) {
-    node_ptr node = _find(key);
-    if (node == _nil)
-      return 0;
-    _remove(node);
-    return 1;
+    ft::pair<iterator, iterator> p = equal_range(key);
+    const size_type old_size = size();
+    _erase_aux(p.first, p.second);
+    return old_size - size();
   }
 
-  void erase(iterator first, iterator last) {
-    if (first == begin() && last == end()) {
-      clear();
-    } else {
-      while (first != last) {
-        erase(first++);
-      }
-    }
-  }
+  void erase(iterator first, iterator last) { _erase_aux(first, last); }
 
   void swap(RedBlackTree &tree) {
     RedBlackTree<Key, T, Compare, Alloc> tmp(tree);
@@ -741,7 +732,7 @@ private:
    * and the tree is rebalanced, accordingly to the Red Black Tree
    * properties.
    */
-  void _remove(node_ptr z) {
+  node_ptr _remove(node_ptr z) {
     node_ptr x;
     node_ptr y = z;
     color y_original_color = y->color;
@@ -770,11 +761,7 @@ private:
     if (y_original_color == BLACK) {
       _remove_fixup(x);
     }
-    if (z != _nil) {
-      _update_nil();
-      _destroy_node(z);
-      _size--;
-    }
+    return y;
   }
 
   void _remove_fixup(node_ptr x) {
@@ -829,6 +816,147 @@ private:
     x->color = BLACK;
   }
 
+  void _erase_aux(iterator position) {
+    // node_ptr y = _remove(position._node);
+    node_ptr y = _tree_rebalance_for_erase(position._node);
+    _destroy_node(y);
+    --_size;
+    _update_nil();
+  }
+
+  node_ptr _tree_rebalance_for_erase(node_ptr const z) {
+    node_ptr _leftmost = _minimum(_root);
+    node_ptr _rightmost = _maximum(_root);
+    node_ptr y = z;
+    node_ptr x = 0;
+    node_ptr x_parent = 0;
+
+    if (y->left == _nil)
+      x = y->right;
+    else if (y->right == _nil)
+      x = y->left;
+    else {
+      y = y->right;
+      while (y->left != _nil)
+        y = y->left;
+      x = y->right;
+    }
+    if (y != z) {
+      z->left->parent = y;
+      y->left = z->left;
+      if (y != z->right) {
+        x_parent = y->parent;
+        if (x)
+          x->parent = y->parent;
+        y->parent->left = x;
+        y->right = z->right;
+        z->right->parent = y;
+      } else
+        x_parent = y;
+      if (_root == z)
+        _root = y;
+      else if (z->parent->left == z)
+        z->parent->left = y;
+      else
+        z->parent->right = y;
+      y->parent = z->parent;
+      std::swap(y->color, z->color);
+      y = z;
+    } else {
+      x_parent = y->parent;
+      if (x)
+        x->parent = y->parent;
+      if (_root == z)
+        _root = x;
+      else if (z->parent->left == z)
+        z->parent->left = x;
+      else
+        z->parent->right = x;
+      if (_leftmost == z) {
+        if (z->right == _nil)
+          _leftmost = z->parent;
+        else
+          _leftmost = _minimum(x);
+      }
+      if (_rightmost == z) {
+        if (z->left == _nil)
+          _rightmost = z->parent;
+        else
+          _rightmost = _maximum(x);
+      }
+    }
+    if (y->color != RED) {
+      while (x != _root && (x == _nil || x->color == BLACK))
+        if (x == x_parent->left) {
+          node_ptr w = x_parent->right;
+          if (w->color == RED) {
+            w->color = BLACK;
+            x_parent->color = RED;
+            _left_rotate(x_parent);
+            w = x_parent->right;
+          }
+          if ((w->left == _nil || w->left->color == BLACK) &&
+              (w->right == _nil || w->right->color == BLACK)) {
+            w->color = RED;
+            x = x_parent;
+            x_parent = x_parent->parent;
+          } else {
+            if (w->right == _nil || w->right->color == BLACK) {
+              w->left->color = BLACK;
+              w->color = RED;
+              _right_rotate(w);
+              w = x_parent->right;
+            }
+            w->color = x_parent->color;
+            x_parent->color = BLACK;
+            if (w->right != _nil)
+              w->right->color = BLACK;
+            _left_rotate(x_parent);
+            break;
+          }
+        } else {
+          node_ptr w = x_parent->left;
+          if (w->color == RED) {
+            w->color = BLACK;
+            x_parent->color = RED;
+            _right_rotate(x_parent);
+            w = x_parent->left;
+          }
+          if ((w->right == _nil || w->right->color == BLACK) &&
+              (w->left == _nil || w->left->color == BLACK)) {
+            w->color = RED;
+            x = x_parent;
+            x_parent = x_parent->parent;
+          } else {
+            if (w->left == _nil || w->left->color == BLACK) {
+              w->right->color = BLACK;
+              w->color = RED;
+              _left_rotate(w);
+              w = x_parent->left;
+            }
+            w->color = x_parent->color;
+            x_parent->color = BLACK;
+            if (w->left != _nil)
+              w->left->color = BLACK;
+            _right_rotate(x_parent);
+            break;
+          }
+        }
+      if (x == _nil)
+        x->color = BLACK;
+    }
+    return y;
+  }
+
+  void _erase_aux(iterator first, iterator last) {
+    if (first == begin() && last == end())
+      clear();
+    else {
+      while (first != last)
+        _erase_aux(first++);
+    }
+  }
+
   /* @brief Transplant node z with node y
    * @param z node to be transplanted
    * @param y node to be transplanted to
@@ -859,8 +987,8 @@ private:
    *   p   r                      l   q
    *
    * Executes a left rotation on the node x.
-   * The rotation is performed such that the node x becomes the left child of
-   * its right child. The right child is returned as the result of the
+   * The rotation is performed such that the node x becomes the left child
+   * of its right child. The right child is returned as the result of the
    * rotation. The rotation is performed in-place. The color of x is
    * preserved.
    */
@@ -885,9 +1013,10 @@ private:
    * @param[in] x node to rotate
    *
    * Executes a right rotation on the node x.
-   * The rotation is performed such that the node x becomes the right child of
-   * its left child. The left child is returned as the result of the rotation.
-   * The rotation is performed in-place. The color of x is preserved.
+   * The rotation is performed such that the node x becomes the right
+   * child of its left child. The left child is returned as the result of
+   * the rotation. The rotation is performed in-place. The color of x is
+   * preserved.
    */
   void _right_rotate(node_ptr x) {
     node_ptr y = x->left;
