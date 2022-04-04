@@ -25,3 +25,7 @@ add_test(NAME TestVector COMMAND TestVector)
 add_executable(TestMap TestTree.cpp TestMap.cpp)
 target_link_libraries(TestMap gtest_main)
 add_test(NAME TestMap COMMAND TestMap)
+
+add_executable(TestStack TestStack.cpp)
+target_link_libraries(TestStack gtest_main)
+add_test(NAME TestStack COMMAND TestStack)
