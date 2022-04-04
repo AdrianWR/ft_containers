@@ -140,6 +140,10 @@ public:
   self &operator++() {
     node_ptr y;
 
+    if (_node == _leaf->right) {
+      _node = _leaf;
+      return *this;
+    }
     if (_node->right != _leaf) {
       _node = _node->right;
       while (_node->left != _leaf)
@@ -240,6 +244,10 @@ public:
   self &operator++() {
     node_ptr y;
 
+    if (_node == _leaf->right) {
+      _node = _leaf;
+      return *this;
+    }
     if (_node->right != _leaf) {
       _node = _node->right;
       while (_node->left != _leaf)
@@ -508,30 +516,6 @@ public:
 private:
   // Private methods
 
-  node_ptr _lower_bound(const key_type &key) const {
-    node_ptr x = _root;
-    node_ptr y = _nil;
-    while (x != _nil) {
-      if (!_comp(_key(x), key))
-        y = x, x = x->left;
-      else
-        x = x->right;
-    }
-    return y;
-  }
-
-  node_ptr _upper_bound(const key_type &key) const {
-    node_ptr x = _root;
-    node_ptr y = _nil;
-    while (x != _nil) {
-      if (_comp(key, _key(x)))
-        y = x, x = x->left;
-      else
-        x = x->right;
-    }
-    return y;
-  }
-
   const key_type _key(node_ptr node) const { return node->data->first; }
 
   node_ptr _new_node(const value_type &value,
@@ -546,6 +530,12 @@ private:
     _node_alloc.construct(tmp, node_type(BLACK));
     return tmp;
   }
+
+  /* @brief Update the nil node
+   *
+   * The nil node is used to simplify the code.
+   * It is always black, and has no parent, left or right child.
+   */
 
   void _update_nil() {
     _nil->parent = _root;
@@ -595,6 +585,30 @@ private:
     return _nil;
   }
 
+  node_ptr _lower_bound(const key_type &key) const {
+    node_ptr x = _root;
+    node_ptr y = _nil;
+    while (x != _nil) {
+      if (!_comp(_key(x), key))
+        y = x, x = x->left;
+      else
+        x = x->right;
+    }
+    return y;
+  }
+
+  node_ptr _upper_bound(const key_type &key) const {
+    node_ptr x = _root;
+    node_ptr y = _nil;
+    while (x != _nil) {
+      if (_comp(key, _key(x)))
+        y = x, x = x->left;
+      else
+        x = x->right;
+    }
+    return y;
+  }
+
   /*
    * @brief: Deep copy tree
    *
@@ -638,6 +652,7 @@ private:
    *   p   r                   z   l   q
    *
    */
+
   iterator _insert(const value_type &val) {
     node_ptr y = _nil;
     node_ptr x = _root;
@@ -732,101 +747,25 @@ private:
    * and the tree is rebalanced, accordingly to the Red Black Tree
    * properties.
    */
-  node_ptr _remove(node_ptr z) {
-    node_ptr x;
-    node_ptr y = z;
-    color y_original_color = y->color;
-    if (z->left == _nil) {
-      x = z->right;
-      _transplant(z, z->right);
-    } else if (z->right == _nil) {
-      x = z->left;
-      _transplant(z, z->left);
-    } else {
-      y = _minimum(z->right);
-      y_original_color = y->color;
-      x = y->right;
-      if (y->parent == z) {
-        x->parent = y;
-      } else {
-        _transplant(y, y->right);
-        y->right = z->right;
-        y->right->parent = y;
-      }
-      _transplant(z, y);
-      y->left = z->left;
-      y->left->parent = y;
-      y->color = z->color;
-    }
-    if (y_original_color == BLACK) {
-      _remove_fixup(x);
-    }
-    return y;
-  }
-
-  void _remove_fixup(node_ptr x) {
-    node_ptr w;
-    while (x != _root && x->color == BLACK) {
-      if (x == x->parent->left) {
-        w = x->parent->right;
-        if (w->color == RED) {
-          w->color = BLACK;
-          x->parent->color = RED;
-          _left_rotate(x->parent);
-          w = x->parent->right;
-        }
-        if (w->left->color == BLACK && w->right->color == BLACK) {
-          w->color = RED;
-          x = x->parent;
-        } else if (w->right->color == BLACK) {
-          w->left->color = BLACK;
-          w->color = RED;
-          _right_rotate(w);
-          w = x->parent->right;
-        }
-        w->color = x->parent->color;
-        x->parent->color = BLACK;
-        w->right->color = BLACK;
-        _left_rotate(x->parent);
-        x = _root;
-      } else {
-        w = x->parent->left;
-        if (w->color == RED) {
-          w->color = BLACK;
-          x->parent->color = RED;
-          _right_rotate(x->parent);
-          w = x->parent->left;
-        }
-        if (w->right->color == BLACK && w->left->color == BLACK) {
-          w->color = RED;
-          x = x->parent;
-        } else if (w->left->color == BLACK) {
-          w->right->color = BLACK;
-          w->color = RED;
-          _left_rotate(w);
-          w = x->parent->left;
-        }
-        w->color = x->parent->color;
-        x->parent->color = BLACK;
-        w->left->color = BLACK;
-        _right_rotate(x->parent);
-        x = _root;
-      }
-    }
-    x->color = BLACK;
-  }
 
   void _erase_aux(iterator position) {
-    // node_ptr y = _remove(position._node);
     node_ptr y = _tree_rebalance_for_erase(position._node);
     _destroy_node(y);
     --_size;
     _update_nil();
   }
 
+  void _erase_aux(iterator first, iterator last) {
+    if (first == begin() && last == end())
+      clear();
+    else {
+      while (first != last) {
+        erase(first++);
+      }
+    }
+  }
+
   node_ptr _tree_rebalance_for_erase(node_ptr const z) {
-    node_ptr _leftmost = _minimum(_root);
-    node_ptr _rightmost = _maximum(_root);
     node_ptr y = z;
     node_ptr x = 0;
     node_ptr x_parent = 0;
@@ -860,7 +799,7 @@ private:
       else
         z->parent->right = y;
       y->parent = z->parent;
-      std::swap(y->color, z->color);
+      ft::swap(y->color, z->color);
       y = z;
     } else {
       x_parent = y->parent;
@@ -872,18 +811,6 @@ private:
         z->parent->left = x;
       else
         z->parent->right = x;
-      if (_leftmost == z) {
-        if (z->right == _nil)
-          _leftmost = z->parent;
-        else
-          _leftmost = _minimum(x);
-      }
-      if (_rightmost == z) {
-        if (z->left == _nil)
-          _rightmost = z->parent;
-        else
-          _rightmost = _maximum(x);
-      }
     }
     if (y->color != RED) {
       while (x != _root && (x == _nil || x->color == BLACK))
@@ -946,15 +873,6 @@ private:
         x->color = BLACK;
     }
     return y;
-  }
-
-  void _erase_aux(iterator first, iterator last) {
-    if (first == begin() && last == end())
-      clear();
-    else {
-      while (first != last)
-        _erase_aux(first++);
-    }
   }
 
   /* @brief Transplant node z with node y
@@ -1033,12 +951,6 @@ private:
     y->right = x;
     x->parent = y;
   }
-
-  /* @brief Update the nil node
-   *
-   * The nil node is used to simplify the code.
-   * It is always black, and has no parent, left or right child.
-   */
 };
 
 template <class Key, class T, class Compare, class Alloc>

@@ -201,12 +201,11 @@ TEST_F(TestMap, TestMapErase) {
   mymap['d'] = 8;
   mymap['e'] = 10;
 
-  mymap.erase('b');
+  mymap.erase('e');
   ASSERT_EQ(mymap.size(), 4);
   ASSERT_EQ(mymap['a'], 2);
   ASSERT_EQ(mymap['c'], 6);
   ASSERT_EQ(mymap['d'], 8);
-  ASSERT_EQ(mymap['e'], 10);
 
   mymap.erase(mymap.begin());
   ASSERT_EQ(mymap.size(), 3);
@@ -221,8 +220,9 @@ TEST_F(TestMap, TestMapErase) {
   ft::map<char, int>::iterator it = m2.begin();
   ft::map<char, int>::iterator ite = m2.end();
   it++;
-  ASSERT_EQ(it->first, 'b');
   m2.erase(it, ite);
+  ASSERT_EQ(m2.size(), 1);
+  ASSERT_EQ(m2['a'], 2);
 }
 
 TEST_F(TestMap, TestClear) {
