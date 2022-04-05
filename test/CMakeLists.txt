@@ -29,3 +29,7 @@ add_test(NAME TestMap COMMAND TestMap)
 add_executable(TestStack TestStack.cpp)
 target_link_libraries(TestStack gtest_main)
 add_test(NAME TestStack COMMAND TestStack)
+
+add_executable(TestPerformance TestPerformance.cpp)
+target_link_libraries(TestPerformance gtest_main)
+add_test(NAME TestPerformance COMMAND TestPerformance)
