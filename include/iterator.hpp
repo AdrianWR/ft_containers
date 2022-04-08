@@ -8,26 +8,15 @@ namespace ft {
 
 typedef std::ptrdiff_t ptrdiff_t;
 
-typedef std::input_iterator_tag input_iterator_tag;
+struct input_iterator_tag {};
 
-typedef std::output_iterator_tag output_iterator_tag;
+struct output_iterator_tag {};
 
-typedef std::forward_iterator_tag forward_iterator_tag;
+struct forward_iterator_tag : public input_iterator_tag {};
 
-typedef std::bidirectional_iterator_tag bidirectional_iterator_tag;
+struct bidirectional_iterator_tag : public forward_iterator_tag {};
 
-typedef std::random_access_iterator_tag random_access_iterator_tag;
-
-template <class Category, class T, class Distance = ft::ptrdiff_t,
-          class Pointer = T *, class Reference = T &>
-class iterator {
-public:
-  typedef T value_type;
-  typedef Distance difference_type;
-  typedef Pointer pointer;
-  typedef Reference reference;
-  typedef Category iterator_category;
-};
+struct random_access_iterator_tag : public bidirectional_iterator_tag {};
 
 template <class Iterator> class iterator_traits {
 public:
@@ -54,6 +43,17 @@ public:
   typedef const T *pointer;
   typedef const T &reference;
   typedef ft::random_access_iterator_tag iterator_category;
+};
+
+template <class Category, class T, class Distance = ft::ptrdiff_t,
+          class Pointer = T *, class Reference = T &>
+class iterator {
+public:
+  typedef T value_type;
+  typedef Distance difference_type;
+  typedef Pointer pointer;
+  typedef Reference reference;
+  typedef Category iterator_category;
 };
 
 template <class Iterator> class reverse_iterator {

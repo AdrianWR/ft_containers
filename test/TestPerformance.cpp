@@ -38,7 +38,7 @@ TEST(TestPerformance, TestMapErase) {
     m[i] = i;
   ft::map<int, int>::iterator it = m.begin();
   it++;
-  // m.erase(it, m.end());
+  m.erase(it, m.end());
 }
 
 TEST(TestPerformanceSTL, TestMapErase) {
