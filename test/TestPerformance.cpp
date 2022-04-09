@@ -34,7 +34,7 @@ TEST(TestPerformanceSTL, TestMap) {
 
 TEST(TestPerformance, TestMapErase) {
   ft::map<int, int> m;
-  for (int i = 0; i < 1000000; i++)
+  for (int i = 0; i < 15; i++)
     m[i] = i;
   ft::map<int, int>::iterator it = m.begin();
   it++;

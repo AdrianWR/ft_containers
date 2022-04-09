@@ -548,6 +548,8 @@ private:
    * @return The node with the minimum value in the subtree rooted at node.
    */
   node_ptr _minimum(node_ptr node) const {
+    if (node == _nil)
+      return _nil;
     while (node->left != _nil) {
       node = node->left;
     }
@@ -559,6 +561,8 @@ private:
    * @return The node with the maximum value in the subtree rooted at node.
    */
   node_ptr _maximum(node_ptr node) const {
+    if (node == _nil)
+      return _nil;
     while (node->right != _nil) {
       node = node->right;
     }
@@ -749,6 +753,7 @@ private:
    */
 
   void _erase_aux(iterator position) {
+    // node_ptr y = _remove(position._node);
     node_ptr y = _tree_rebalance_for_erase(position._node);
     _destroy_node(y);
     --_size;
@@ -763,6 +768,90 @@ private:
         erase(first++);
       }
     }
+  }
+
+  node_ptr _remove(node_ptr z) {
+    node_ptr x;
+    node_ptr y = z;
+    color y_original_color = y->color;
+    if (z->left == _nil) {
+      x = z->right;
+      _transplant(z, z->right);
+    } else if (z->right == _nil) {
+      x = z->left;
+      _transplant(z, z->left);
+    } else {
+      y = _minimum(z->right);
+      y_original_color = y->color;
+      x = y->right;
+      if (y->parent == z) {
+        x->parent = y;
+      } else {
+        _transplant(y, y->right);
+        y->right = z->right;
+        y->right->parent = y;
+      }
+      _transplant(z, y);
+      y->left = z->left;
+      y->left->parent = y;
+      y->color = z->color;
+    }
+    if (y_original_color == BLACK) {
+      _remove_fixup(x);
+    }
+    return z;
+  }
+
+  void _remove_fixup(node_ptr x) {
+    node_ptr w;
+    while (x != _root && x->color == BLACK) {
+      if (x == x->parent->left) {
+        w = x->parent->right;
+        if (w->color == RED) {
+          w->color = BLACK;
+          x->parent->color = RED;
+          _left_rotate(x->parent);
+          w = x->parent->right;
+        }
+        if (w->left->color == BLACK && w->right->color == BLACK) {
+          w->color = RED;
+          x = x->parent;
+        } else if (w->right->color == BLACK) {
+          w->left->color = BLACK;
+          w->color = RED;
+          _right_rotate(w);
+          w = x->parent->right;
+        }
+        w->color = x->parent->color;
+        x->parent->color = BLACK;
+        w->right->color = BLACK;
+        _left_rotate(x->parent);
+        x = _root;
+      } else {
+        w = x->parent->left;
+        if (w->color == RED) {
+          w->color = BLACK;
+          x->parent->color = RED;
+          _right_rotate(x->parent);
+          w = x->parent->left;
+        }
+        if (w->right->color == BLACK && w->left->color == BLACK) {
+          w->color = RED;
+          x = x->parent;
+        } else if (w->left->color == BLACK) {
+          w->right->color = BLACK;
+          w->color = RED;
+          _left_rotate(w);
+          w = x->parent->left;
+        }
+        w->color = x->parent->color;
+        x->parent->color = BLACK;
+        w->left->color = BLACK;
+        _right_rotate(x->parent);
+        x = _root;
+      }
+    }
+    x->color = BLACK;
   }
 
   node_ptr _tree_rebalance_for_erase(node_ptr const z) {
