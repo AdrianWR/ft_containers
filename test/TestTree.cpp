@@ -55,10 +55,10 @@ TEST(TestTreeConstructor, TestTreeDefaultConstructor) {
   EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);
 }
 
-TEST_F(TestTree, TestTreeCopyConstructor) {
-  ft::RedBlackTree<int, int> tree_copy(tree);
-  EXPECT_TRUE(tree_copy == tree);
-}
+// TEST_F(TestTree, TestTreeCopyConstructor) {
+//   ft::RedBlackTree<int, int> tree_copy(tree);
+//   EXPECT_TRUE(tree_copy == tree);
+// }
 
 TEST_F(TestTree, TestTreeInsert) {
   EXPECT_EQ(tree.get_root()->data->first, 13);
@@ -88,6 +88,7 @@ TEST_F(TestTree, TestTreeInsert) {
 
 TEST_F(TestTree, TestRemove) {
   EXPECT_EQ(tree.get_root()->data->first, 13);
+
   tree.erase(13);
   EXPECT_EQ(tree.get_root()->data->first, 15);
   EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);

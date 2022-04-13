@@ -30,13 +30,14 @@ public:
   node_ptr parent;
   node_ptr left;
   node_ptr right;
+  node_ptr aux;
   color_type color;
   pointer data;
   allocator_type alloc;
 
 public:
   // Default Constructor
-  explicit Node(color_type color = RED, node_ptr parent = _nullptr,
+  explicit Node(color_type color = BLACK, node_ptr parent = _nullptr,
                 node_ptr left = _nullptr, node_ptr right = _nullptr,
                 allocator_type alloc = allocator_type())
       : data(_nullptr), parent(parent), left(left), right(right), color(color),
@@ -119,7 +120,7 @@ private:
   node_ptr _leaf;
 
 public:
-  TreeIterator() : _node(), _leaf() {}
+  TreeIterator() : _node() {}
 
   TreeIterator(node_ptr node, node_ptr leaf) : _node(node), _leaf(leaf) {}
 
@@ -137,26 +138,45 @@ public:
 
   pointer operator->() const { return &(operator*()); }
 
-  self &operator++() {
-    node_ptr y;
+  node_ptr _minimum(node_ptr node) {
+    while (node->left != _leaf)
+      node = node->left;
+    return node;
+  }
 
-    if (_node == _leaf->right) {
-      _node = _leaf;
-      return *this;
+  node_ptr _maximum(node_ptr node) {
+    while (node->right != _leaf)
+      node = node->right;
+    return node;
+  }
+
+  node_ptr _successor(node_ptr x) {
+    if (x->right != _leaf)
+      return _minimum(x->right);
+    node_ptr y = x->parent;
+    while (y != _leaf && x == y->right) {
+      x = y;
+      y = y->parent;
     }
-    if (_node->right != _leaf) {
-      _node = _node->right;
-      while (_node->left != _leaf)
-        _node = _node->left;
-    } else {
-      y = _node->parent;
-      while (_node == y->right) {
-        _node = y;
-        y = y->parent;
-      }
-      if (_node->right != y)
-        _node = y;
+    return y;
+  }
+
+  node_ptr _predecessor(node_ptr x) {
+    if (x == _leaf) {
+      return _leaf->aux;
     }
+    if (x->left != _leaf)
+      return _maximum(x->left);
+    node_ptr y = x->parent;
+    while (y != _leaf && x == y->left) {
+      x = y;
+      y = y->parent;
+    }
+    return y;
+  }
+
+  self &operator++() {
+    _node = _successor(_node);
     return *this;
   }
 
@@ -167,27 +187,7 @@ public:
   }
 
   self &operator--() {
-    node_ptr y;
-
-    if (_node == _leaf) {
-      _node = _leaf->right;
-      return *this;
-    }
-    if (_node->color == ft::color::RED && _node->parent->parent == _node) {
-      _node = _node->right;
-    } else if (_node->left != _leaf) {
-      y = _node->left;
-      while (y->right != _leaf)
-        y = y->right;
-      _node = y;
-    } else {
-      y = _node->parent;
-      while (_node == y->left) {
-        _node = y;
-        y = y->parent;
-      }
-      _node = y;
-    }
+    _node = _predecessor(_node);
     return *this;
   }
 
@@ -241,26 +241,44 @@ public:
 
   pointer operator->() const { return &(operator*()); }
 
-  self &operator++() {
-    node_ptr y;
+  node_ptr _minimum(node_ptr node) {
+    while (node->left != _leaf)
+      node = node->left;
+    return node;
+  }
 
-    if (_node == _leaf->right) {
-      _node = _leaf;
-      return *this;
+  node_ptr _maximum(node_ptr node) {
+    while (node->right != _leaf)
+      node = node->right;
+    return node;
+  }
+
+  node_ptr _successor(node_ptr x) {
+    if (x->right != _leaf)
+      return _minimum(x->right);
+    node_ptr y = x->parent;
+    while (y != _leaf && x == y->right) {
+      x = y;
+      y = y->parent;
     }
-    if (_node->right != _leaf) {
-      _node = _node->right;
-      while (_node->left != _leaf)
-        _node = _node->left;
-    } else {
-      y = _node->parent;
-      while (_node == y->right) {
-        _node = y;
-        y = y->parent;
-      }
-      if (_node->right != y)
-        _node = y;
+    return y;
+  }
+
+  node_ptr _predecessor(node_ptr x) {
+    if (x == _leaf)
+      return _leaf->parent;
+    if (x->left != _leaf)
+      return _maximum(x->left);
+    node_ptr y = x->parent;
+    while (y != _leaf && x == y->left) {
+      x = y;
+      y = y->parent;
     }
+    return y;
+  }
+
+  self &operator++() {
+    _node = _successor(_node);
     return *this;
   }
 
@@ -271,27 +289,7 @@ public:
   }
 
   self &operator--() {
-    node_ptr y;
-
-    if (_node == _leaf) {
-      _node = _leaf->right;
-      return *this;
-    }
-    if (_node->color == ft::color::RED && _node->parent->parent == _node) {
-      _node = _node->right;
-    } else if (_node->left != _leaf) {
-      y = _node->left;
-      while (y->right != _leaf)
-        y = y->right;
-      _node = y;
-    } else {
-      y = _node->parent;
-      while (_node == y->left) {
-        _node = y;
-        y = y->parent;
-      }
-      _node = y;
-    }
+    _node = _predecessor(_node);
     return *this;
   }
 
@@ -333,7 +331,7 @@ public:
   typedef const T &const_reference;
   typedef Node<value_type, allocator_type> node_type;
   typedef node_type *node_ptr;
-  typedef node_type &node_ref;
+  typedef node_type const &node_ref;
   typedef std::size_t size_type;
   typedef ptrdiff_t difference_type;
   typedef TreeIterator<value_type> iterator;
@@ -343,12 +341,15 @@ public:
   typedef std::allocator<node_type> node_allocator_type;
 
 private:
-  node_ptr _root;
-  node_ptr _nil;
   size_type _size;
   allocator_type _alloc;
   node_allocator_type _node_alloc;
   key_compare _comp;
+
+  // Aux Nodes
+  node_ptr _root;
+  node_ptr _nil;
+  node_type _header;
 
 public:
   // Default constructor
@@ -356,7 +357,9 @@ public:
                         const allocator_type &alloc = allocator_type())
       : _node_alloc(node_allocator_type()), _alloc(alloc), _comp(comp),
         _size(0) {
-    _nil = _new_nil_node();
+    _nil = _node_alloc.allocate(1);
+    _node_alloc.construct(_nil, node_type());
+    _nil->parent = _nil->left = _nil->right = _nil;
     _root = _nil;
   }
 
@@ -365,9 +368,11 @@ public:
       : _node_alloc(node_allocator_type(tree._node_alloc)),
         _alloc(allocator_type(tree._alloc)), _comp(tree._comp),
         _size(tree._size) {
-    _nil = _new_nil_node();
+    _nil = _node_alloc.allocate(1);
+    _nil->parent = _nil->left = _nil->right = _nil;
+    _node_alloc.construct(_nil, node_type());
     _root = _copy_tree(tree._root, tree._nil);
-    _update_nil();
+    _nil->aux = _maximum(_root);
   }
 
   // Destructor
@@ -383,7 +388,6 @@ public:
       _destroy_tree(_root);
       _root = _copy_tree(tree._root, tree._nil);
       _size = tree._size;
-      _update_nil();
     }
     return *this;
   }
@@ -525,24 +529,6 @@ private:
     return z;
   }
 
-  node_ptr _new_nil_node() {
-    node_ptr tmp = _node_alloc.allocate(1);
-    _node_alloc.construct(tmp, node_type(BLACK));
-    return tmp;
-  }
-
-  /* @brief Update the nil node
-   *
-   * The nil node is used to simplify the code.
-   * It is always black, and has no parent, left or right child.
-   */
-
-  void _update_nil() {
-    _nil->parent = _root;
-    _nil->left = _minimum(_root);
-    _nil->right = _maximum(_root);
-  }
-
   /* @brief Get the node with the minimum value in the subtree rooted at node.
    * @param node The root of the subtree.
    * @return The node with the minimum value in the subtree rooted at node.
@@ -649,11 +635,11 @@ private:
    * on the caller function.
    *
    *
-   *   p                           p
-   *  / \                         / \
-   * l   q                       l   q
-   *    / \   =>                /   / \
-   *   p   r                   z   l   q
+   *     p                           p
+   *    / \                         / \
+   *   l   q                       l   q
+   *      / \   =>                /   / \
+   *     p   r                   z   l   q
    *
    */
 
@@ -663,6 +649,7 @@ private:
     while (x != _nil) {
       y = x;
       if (!_comp(val.first, _key(x)) && !_comp(_key(x), val.first)) {
+        _nil->aux = _maximum(_root);
         return iterator(x, _nil);
       } else if (_comp(val.first, _key(x)))
         x = x->left;
@@ -677,9 +664,12 @@ private:
       y->left = z;
     else
       y->right = z;
+    z->left = _nil;
+    z->right = _nil;
+    z->color = RED;
     _insert_fixup(z);
     ++_size;
-    _update_nil();
+    _nil->aux = _maximum(_root);
     return iterator(z, _nil);
   }
 
@@ -753,11 +743,10 @@ private:
    */
 
   void _erase_aux(iterator position) {
-    // node_ptr y = _remove(position._node);
-    node_ptr y = _tree_rebalance_for_erase(position._node);
+    node_ptr y = _remove(position._node);
     _destroy_node(y);
     --_size;
-    _update_nil();
+    _nil->aux = _maximum(_root);
   }
 
   void _erase_aux(iterator first, iterator last) {
@@ -784,9 +773,9 @@ private:
       y = _minimum(z->right);
       y_original_color = y->color;
       x = y->right;
-      if (y->parent == z) {
+      if (y->parent == z)
         x->parent = y;
-      } else {
+      else {
         _transplant(y, y->right);
         y->right = z->right;
         y->right->parent = y;
@@ -888,7 +877,7 @@ private:
       else
         z->parent->right = y;
       y->parent = z->parent;
-      ft::swap(y->color, z->color);
+      std::swap(y->color, z->color);
       y = z;
     } else {
       x_parent = y->parent;
@@ -1000,6 +989,8 @@ private:
    * preserved.
    */
   void _left_rotate(node_ptr x) {
+    if (x == _nil || x->right == _nil)
+      return;
     node_ptr y = x->right;
     x->right = y->left;
     if (y->left != _nil)
@@ -1026,6 +1017,8 @@ private:
    * preserved.
    */
   void _right_rotate(node_ptr x) {
+    if (x == _nil || x->left == _nil)
+      return;
     node_ptr y = x->left;
     x->left = y->right;
     if (y->right != _nil)
