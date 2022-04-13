@@ -9,8 +9,6 @@
 #include <cstddef>
 #include <memory>
 
-#include <iostream>
-
 namespace ft {
 
 enum color { RED, BLACK };
