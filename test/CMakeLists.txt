@@ -42,3 +42,6 @@ add_executable(TestPerformance TestPerformance.cpp)
 target_link_libraries(TestPerformance gtest_main)
 add_test(NAME TestPerformance COMMAND TestPerformance)
 
+add_executable(TestPerformanceSTL TestPerformanceSTL.cpp)
+target_link_libraries(TestPerformanceSTL gtest_main)
+add_test(NAME TestPerformanceSTL COMMAND TestPerformanceSTL)
