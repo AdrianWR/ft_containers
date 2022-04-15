@@ -52,10 +52,10 @@ public:
   // Copy constructor
   Node(const Node &n)
       : parent(n.parent), left(n.left), right(n.right), color(n.color),
-        alloc(n.alloc), data(alloc.allocate(1)) {
-    if (n.data != _nullptr) {
+        alloc(n.alloc) {
+    data = alloc.allocate(1);
+    if (n.data != _nullptr)
       alloc.construct(data, *n.data);
-    }
   }
 
   // Copy assignment operator
@@ -87,8 +87,8 @@ public:
   virtual ~Node() {
     if (data != _nullptr) {
       alloc.destroy(data);
-      alloc.deallocate(data, 1);
     }
+    alloc.deallocate(data, 1);
   }
 
   // Getters
