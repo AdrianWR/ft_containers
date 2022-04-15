@@ -1,6 +1,5 @@
 #include "type_traits.hpp"
 #include <gtest/gtest.h>
-#include <iostream>
 
 // Disclaimer: I haven't found a way to test ft::enable_if
 // with gtest, as it's a resource to be used within template

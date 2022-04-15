@@ -2,14 +2,13 @@
 #include <map>
 #include <memory>
 
+#include "functional"
 #include "nullptr.hpp"
 #include "tree.hpp"
 
-#include <iostream>
-
 class TestTree : public ::testing::Test {
 public:
-  ft::RedBlackTree<int, int> tree;
+  ft::RedBlackTree<int, int, ft::_Select1st<ft::pair<const int, int>>> tree;
 
   void SetUp() {
     tree.insert_unique(ft::make_pair<int, int>(13, 13));
@@ -51,7 +50,7 @@ TEST(TestNode, TestNodeConstructor) {
 }
 
 TEST(TestTreeConstructor, TestTreeDefaultConstructor) {
-  ft::RedBlackTree<int, int> tree;
+  ft::RedBlackTree<int, int, ft::_Select1st<ft::pair<const int, int>>> tree;
   EXPECT_EQ(tree.get_root()->color, ft::color::BLACK);
 }
 
@@ -118,9 +117,10 @@ TEST_F(TestTree, TestRemove) {
   EXPECT_EQ(tree.get_root()->right->right->color, ft::color::BLACK);
   EXPECT_EQ(tree.size(), 7);
 
-  ft::RedBlackTree<int, int> tree2;
+  ft::RedBlackTree<int, int, ft::_Select1st<ft::pair<const int, int>>> tree2;
   tree2.insert_unique(ft::make_pair(1, 1));
-  ft::RedBlackTree<int, int>::iterator it = tree2.find(1);
+  ft::RedBlackTree<int, int, ft::_Select1st<ft::pair<const int, int>>>::iterator
+      it = tree2.find(1);
   tree2.erase(it);
   EXPECT_EQ(tree2.size(), 0);
 }
@@ -132,7 +132,7 @@ TEST_F(TestTree, TestSize) {
 
 TEST_F(TestTree, TestEmpty) {
   EXPECT_FALSE(tree.empty());
-  ft::RedBlackTree<int, int> tree2;
+  ft::RedBlackTree<int, int, ft::_Select1st<ft::pair<const int, int>>> tree2;
   EXPECT_TRUE(tree2.empty());
 }
 
@@ -142,7 +142,8 @@ TEST_F(TestTree, TestClear) {
 }
 
 TEST_F(TestTree, TestIterator) {
-  ft::RedBlackTree<int, int>::iterator it = tree.begin();
+  ft::RedBlackTree<int, int, ft::_Select1st<ft::pair<const int, int>>>::iterator
+      it = tree.begin();
   EXPECT_EQ(it->first, 1);
   EXPECT_EQ(it->second, 1);
   ++it;
@@ -175,7 +176,8 @@ TEST_F(TestTree, TestIterator) {
   ++it;
   EXPECT_EQ(it, tree.end());
 
-  ft::RedBlackTree<int, int>::iterator it2 = tree.end();
+  ft::RedBlackTree<int, int, ft::_Select1st<ft::pair<const int, int>>>::iterator
+      it2 = tree.end();
   it2--;
   EXPECT_EQ(it2->first, 27);
   EXPECT_EQ(it2->second, 27);
@@ -210,7 +212,9 @@ TEST_F(TestTree, TestIterator) {
 }
 
 TEST_F(TestTree, TestReverseIterator) {
-  ft::RedBlackTree<int, int>::reverse_iterator it = tree.rbegin();
+  ft::RedBlackTree<
+      int, int, ft::_Select1st<ft::pair<const int, int>>>::reverse_iterator it =
+      tree.rbegin();
   EXPECT_EQ(it->first, 27);
   EXPECT_EQ(it->second, 27);
   it++;

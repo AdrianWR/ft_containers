@@ -34,7 +34,7 @@ public:
   typedef Alloc allocator_type;
 
   class value_compare : ft::binary_function<value_type, value_type, bool> {
-    friend class map<Key, T, Compare, Alloc>;
+    friend class map;
 
   protected:
     Compare comp;
@@ -50,8 +50,8 @@ public:
   };
 
 private:
-  typedef RedBlackTree<Key, T, Compare, Alloc> _tree_type;
-  typedef typename _tree_type::node_type _node_type;
+  typedef RedBlackTree<Key, T, _Select1st<value_type>, Compare, Alloc>
+      _tree_type;
 
 public:
   typedef typename allocator_type::reference reference;

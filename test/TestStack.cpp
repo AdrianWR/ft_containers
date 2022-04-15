@@ -1,6 +1,7 @@
 #include "stack.hpp"
 #include "vector.hpp"
 #include <gtest/gtest.h>
+#include <list>
 #include <vector>
 
 TEST(TestStack, TestConstructor) {
@@ -122,8 +123,6 @@ TEST(TestStack, TestSize) {
   ASSERT_EQ(s1.size(), 10);
   ASSERT_EQ(s2.size(), 10);
 }
-
-#include <stack>
 
 TEST(TestStack, TestComparisonOperators) {
   ft::vector<int> v;

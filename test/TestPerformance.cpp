@@ -1,8 +1,10 @@
 #include "map.hpp"
+#include "set.hpp"
 #include "stack.hpp"
 #include "vector.hpp"
 #include <gtest/gtest.h>
 #include <map>
+#include <set>
 #include <stack>
 #include <vector>
 
@@ -80,4 +82,34 @@ TEST(TestPerformanceSTL, TestStack) {
     s.push(i);
   for (int i = 0; i < 1000000; i++)
     s.pop();
+}
+
+TEST(TestPerformance, TestSet) {
+  ft::set<int> s;
+  for (int i = 0; i < 1000000; i++)
+    s.insert(i);
+}
+
+TEST(TestPerformanceSTL, TestSet) {
+  std::set<int> s;
+  for (int i = 0; i < 1000000; i++)
+    s.insert(i);
+}
+
+TEST(TestPerformance, TestSetErase) {
+  ft::set<int> s;
+  for (int i = 0; i < 1000000; i++)
+    s.insert(i);
+  ft::set<int>::iterator it = s.begin();
+  it++;
+  s.erase(it, s.end());
+}
+
+TEST(TestPerformanceSTL, TestSetErase) {
+  std::set<int> s;
+  for (int i = 0; i < 1000000; i++)
+    s.insert(i);
+  std::set<int>::iterator it = s.begin();
+  it++;
+  s.erase(it, s.end());
 }

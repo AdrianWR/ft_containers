@@ -263,8 +263,9 @@ public:
   }
 
   node_ptr _predecessor(node_ptr x) {
-    if (x == _leaf)
-      return _leaf->parent;
+    if (x == _leaf) {
+      return _leaf->aux;
+    }
     if (x->left != _leaf)
       return _maximum(x->left);
     node_ptr y = x->parent;
@@ -314,13 +315,13 @@ inline bool operator!=(const TreeIterator<T> &it1,
   return !(it1 == it2);
 }
 
-template <class Key, class T, class Compare = ft::less<Key>,
+template <class Key, class T, class KeyOfValue, class Compare = ft::less<Key>,
           class Alloc = std::allocator<ft::pair<const Key, T>>>
 class RedBlackTree {
 public:
   typedef Key key_type;
   typedef T mapped_type;
-  typedef ft::pair<const Key, T> value_type;
+  typedef typename Alloc::value_type value_type;
   typedef T *pointer;
   typedef T &reference;
   typedef Alloc allocator_type;
@@ -347,7 +348,6 @@ private:
   // Aux Nodes
   node_ptr _root;
   node_ptr _nil;
-  node_type _header;
 
 public:
   // Default constructor
@@ -429,13 +429,13 @@ public:
   // Tree operations
 
   ft::pair<iterator, bool> insert_unique(const value_type &val) {
-    iterator it = _insert(val);
-    return ft::make_pair(it, it == end());
+    return _insert(val);
   }
 
   iterator insert_unique(iterator hint, const value_type &val) {
     (void)hint;
-    return _insert(val);
+    ft::pair<iterator, bool> p = _insert(val);
+    return p.first;
   }
 
   template <class InputIterator>
@@ -461,7 +461,7 @@ public:
   void erase(iterator first, iterator last) { _erase_aux(first, last); }
 
   void swap(RedBlackTree &tree) {
-    RedBlackTree<Key, T, Compare, Alloc> tmp(tree);
+    RedBlackTree<Key, T, KeyOfValue, Compare, Alloc> tmp(tree);
     tree = *this;
     *this = tmp;
   }
@@ -518,7 +518,11 @@ public:
 private:
   // Private methods
 
-  const key_type _key(node_ptr node) const { return node->data->first; }
+  const key_type _key(node_ptr node) const {
+    return KeyOfValue()(*(node->data));
+  }
+
+  const key_type _key(value_type val) const { return KeyOfValue()(val); }
 
   node_ptr _new_node(const value_type &value,
                      const typename node_type::color_type color = RED) {
@@ -641,15 +645,15 @@ private:
    *
    */
 
-  iterator _insert(const value_type &val) {
+  ft::pair<iterator, bool> _insert(const value_type &val) {
     node_ptr y = _nil;
     node_ptr x = _root;
     while (x != _nil) {
       y = x;
-      if (!_comp(val.first, _key(x)) && !_comp(_key(x), val.first)) {
+      if (!_comp(_key(val), _key(x)) && !_comp(_key(x), _key(val))) {
         _nil->aux = _maximum(_root);
-        return iterator(x, _nil);
-      } else if (_comp(val.first, _key(x)))
+        return ft::make_pair(iterator(x, _nil), false);
+      } else if (_comp(_key(val), _key(x)))
         x = x->left;
       else
         x = x->right;
@@ -668,7 +672,7 @@ private:
     _insert_fixup(z);
     ++_size;
     _nil->aux = _maximum(_root);
-    return iterator(z, _nil);
+    return ft::make_pair(iterator(z, _nil), true);
   }
 
   void _insert_fixup(node_ptr z) {
